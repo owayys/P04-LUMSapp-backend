@@ -6,15 +6,16 @@ CREATE TABLE `Engagement` (
   `Type` enum('LIKE','DISLIKE','BOOKMARK') NOT NULL,
   PRIMARY KEY (`UserID`,`PostID`,`Type`),
   KEY `PostID` (`PostID`),
-  CONSTRAINT `Engagement_ibfk_1` FOREIGN KEY (`UserID`) REFERENCES `User` (`ID`),
-  CONSTRAINT `Engagement_ibfk_2` FOREIGN KEY (`PostID`) REFERENCES `Post` (`PostID`)
+  CONSTRAINT `Engagement_ibfk_3` FOREIGN KEY (`UserID`) REFERENCES `User` (`ID`) ON DELETE CASCADE,
+  CONSTRAINT `Engagement_ibfk_4` FOREIGN KEY (`PostID`) REFERENCES `Post` (`PostID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Post` (
   `PostID` int NOT NULL AUTO_INCREMENT,
-  `ParentID` int DEFAULT NULL,
+  `MasterID` int NOT NULL,
+  `ParentID` int NOT NULL,
   `UserID` int NOT NULL,
   `Content` varchar(500) NOT NULL,
   `TimePosted` datetime DEFAULT NULL,
@@ -23,11 +24,13 @@ CREATE TABLE `Post` (
   `Dislikes` int NOT NULL DEFAULT '0',
   `Bookmarks` int NOT NULL DEFAULT '0',
   `Comments` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`PostID`),
+  PRIMARY KEY (`PostID`,`MasterID`,`ParentID`),
   KEY `ParentID` (`ParentID`),
   KEY `UserID` (`UserID`),
+  KEY `MasterID` (`MasterID`),
   CONSTRAINT `Post_ibfk_1` FOREIGN KEY (`ParentID`) REFERENCES `Post` (`PostID`),
-  CONSTRAINT `Post_ibfk_2` FOREIGN KEY (`UserID`) REFERENCES `User` (`ID`)
+  CONSTRAINT `Post_ibfk_2` FOREIGN KEY (`UserID`) REFERENCES `User` (`ID`),
+  CONSTRAINT `Post_ibfk_3` FOREIGN KEY (`MasterID`) REFERENCES `Post` (`PostID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
