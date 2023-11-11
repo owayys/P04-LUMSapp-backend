@@ -13,6 +13,11 @@ const app = express();
 app.use(morgan('dev'))
 app.use(cors())
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
+
+app.use('/api/user', require('./routers/user'))
+// app.use('/api/post', routers.postRouter)
+// app.use('/api/engagement', routers.engagementRouter)
 
 app.listen(PORT, () => {
     console.log(`Server is listening on port: ${PORT}...`)
