@@ -8,10 +8,10 @@
     e.g.,\
     ```
     {
-        &nbsp;&nbsp;&nbsp;&nbsp;"name": "Name",
-        &nbsp;&nbsp;&nbsp;&nbsp;"email": "24100290@lums.edu.pk",
-        &nbsp;&nbsp;&nbsp;&nbsp;"password": "yo124",
-        &nbsp;&nbsp;&nbsp;&nbsp;"type": "STUDENT" OR "COUNCIL" OR "SOCIETY" OR "ADMIN"
+        "name": "Name",
+        "email": "24100290@lums.edu.pk",
+        "password": "yo124",
+        "type": "STUDENT" OR "COUNCIL" OR "SOCIETY" OR "ADMIN"
     }
     ```
     -   returns code 200 on success,\
@@ -20,8 +20,8 @@
     e.g.,\
     ```
     {
-        &nbsp;&nbsp;&nbsp;&nbsp;"email": "24100290@lums.edu.pk",
-        &nbsp;&nbsp;&nbsp;&nbsp;"password": "yo124"
+        "email": "24100290@lums.edu.pk",
+        "password": "yo124"
     }
     ```
     -   returns code 200 on success,\
