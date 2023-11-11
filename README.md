@@ -1,5 +1,21 @@
 -> `npm run dev` <-
 
+# DB Setup
+
+```
+mysql -u username -p -h localhost LUMSapp < currSchema.sql
+```
+
+OR
+
+```
+> mysql -u root -p
+
+mysql> create database LUMSapp;
+mysql> use LUMSapp;
+mysql> source currSchema.sql;
+```
+
 # Endpoints
 
 ## Auth
