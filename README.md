@@ -4,7 +4,7 @@
 
 ## Auth
 
--   ### '/api/user/signup':
+-   ### '/api/user/signup'
     e.g.,
     ```
     {
@@ -16,7 +16,7 @@
     ```
     -   returns code 200 on success,
     -   else error
--   ### '/api/user/login':
+-   ### '/api/user/login'
     e.g.,
     ```
     {
