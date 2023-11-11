@@ -4,7 +4,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 require('dotenv').config();
 
-// var connection = require('./db/index');
+var connection = require('./db/index');
 
 const PORT = process.env.PORT || 8080;
 
