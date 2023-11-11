@@ -20,7 +20,7 @@ mysql> source currSchema.sql;
 
 ## Auth
 
--   ### '/api/user/signup'
+-   ### Signup: /api/user/signup
     e.g.,
     ```
     {
@@ -32,7 +32,7 @@ mysql> source currSchema.sql;
     ```
     -   returns code 200 on success,
     -   else error
--   ### '/api/user/login'
+-   ### Login: /api/user/login
     e.g.,
     ```
     {
