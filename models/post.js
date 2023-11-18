@@ -47,6 +47,10 @@ const postSchema = mongoose.Schema({
     type: Number,
     default: 0,
   },
+  bookmarkCount: {
+    type: Number,
+    default: 0,
+  },
 });
 
 export const Post = mongoose.model("Post", postSchema);

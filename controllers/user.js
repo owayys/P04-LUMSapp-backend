@@ -29,16 +29,21 @@ export const userSignup = async (req, res) => {
     const id = email.split("@")[0];
     const regex = /^[0-9]+$/;
 
-    if (!regex.test(id) || id.length !== 8) {
+    if (!regex.test(id) || id.length !== 8 || id !== "studentcouncil") {
       return res.status(400).json({
         success: false,
-        message: "Please enter a valid STUDENT LUMS email ID",
+        message: "Please enter a valid LUMS email ID",
       });
-    } else if (id !== "studentcouncil") {
     }
 
     const authPin = getPin(6);
-  } catch (error) {}
+  } catch (error) {
+    console.log("Something went wrong");
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 export const userLogin = async (req, res) => {
