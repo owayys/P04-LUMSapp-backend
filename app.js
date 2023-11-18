@@ -16,7 +16,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/user', require('./routers/user'))
-// app.use('/api/post', routers.postRouter)
+app.use('/api/post', require('./routers/post'))
 // app.use('/api/engagement', routers.engagementRouter)
 
 app.listen(PORT, () => {
