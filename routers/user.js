@@ -1,8 +1,12 @@
-const { userSignup, userLogin } = require('../controllers/user')
+// import { userSignup, userLogin } from "../controllers/user";
 
-const router = require('express').Router()
+import express from "express";
 
-router.post('/signup', userSignup)
-router.post('/login', userLogin)
+const router = express.Router();
+// router.post("/signup", userSignup);
+// router.post("/login", userLogin);
+router.get("/get", (req, res) => {
+  res.send("GET");
+});
 
-module.exports = router
+export default router;
