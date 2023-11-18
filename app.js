@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/user', require('./routers/user'))
 app.use('/api/post', require('./routers/post'))
-// app.use('/api/engagement', routers.engagementRouter)
+app.use('/api/engagement', require('./routers/engagement'))
 
 app.listen(PORT, () => {
     console.log(`Server is listening on port: ${PORT}...`)

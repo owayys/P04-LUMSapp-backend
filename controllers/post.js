@@ -8,6 +8,17 @@ exports.postCreate = (req, res) => {
 
     if (masterID == null) {
         masterID = postID;
+    } else {
+        pool.query(`UPDATE Post SET Comments = Comments + 1 WHERE UserID = ${userID} AND PostID = '${masterID}'`, (err, result) => {
+            if (err) {
+                if (err.code === 'ER_DUP_ENTRY') {
+                    res.json({ code: err.code })
+                }
+                else {
+                    throw err;
+                }
+            }
+        });
     }
 
     pool.query(`INSERT INTO Post (PostID, MasterID, ParentID, UserID, Content, TimePosted, LastEdited) VALUES ('${postID}','${masterID}',${parentID != null ? `'${parentID}'` : parentID},${userID}, '${content}', '${timePosted}', '${timePosted}')`, (err, result) => {
