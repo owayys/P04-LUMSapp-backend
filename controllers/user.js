@@ -1,6 +1,7 @@
 var pool = require('../db/index');
 const bcrypt = require('bcrypt');
 const getPin = require('../util/getPin');
+const getDatetime = require('../util/getDatetime');
 
 exports.userLogin = (req, res) => {
     const { email, password } = req.body
@@ -48,12 +49,13 @@ exports.userSignup = (req, res) => {
 
     const id = parseInt(email.split('@')[0]);
     const authPin = getPin(6);
+    const pinExpiry = getDatetime(2);
 
     bcrypt.hash(password, 10, (err, hashed_password) => {
         if (err) {
             res.json({ error: err })
         }
-        pool.query(`INSERT INTO User (Name, ID, Password, Type, AuthPin) VALUES ('${name}','${id}','${hashed_password}', '${type.toUpperCase()}', '${authPin}')`, (err, result) => {
+        pool.query(`INSERT INTO User (Name, ID, Password, Type, AuthPin, PinExpiry) VALUES ('${name}','${id}','${hashed_password}', '${type.toUpperCase()}', '${authPin}', '${pinExpiry}')`, (err, result) => {
             if (err) {
                 if (err.code === 'ER_DUP_ENTRY') {
                     res.json({ code: err.code })
