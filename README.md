@@ -21,7 +21,9 @@ mysql> source currSchema.sql;
 ## Auth
 
 -   ### Signup: /api/user/signup
+
     e.g.,
+
     ```
     {
         "name": "Name",
@@ -30,8 +32,10 @@ mysql> source currSchema.sql;
         "type": "STUDENT" OR "COUNCIL" OR "SOCIETY" OR "ADMIN"
     }
     ```
+
     -   returns code 200 on success
     -   else error
+
 -   ### Login: /api/user/login
     e.g.,
     ```
@@ -47,14 +51,18 @@ mysql> source currSchema.sql;
 ## Post
 
 -   ### Get: /api/post/get
+
     e.g.,
+
     ```
     {
         "postID": {PostID}
     }
     ```
+
     -   returns code 200, Post object on success
     -   else error
+
 -   ### Feed: /api/post/feed
 
     e.g.,
@@ -71,7 +79,9 @@ mysql> source currSchema.sql;
 -   ### Create: /api/post/create
 
     -   #### New Post:
+
         e.g.,
+
         ```
         {
             "masterID": null,
@@ -81,10 +91,14 @@ mysql> source currSchema.sql;
             "timePosted": "2023-11-11 15:30:00"
         }
         ```
+
         -   returns code 200, PostID on success
         -   else error
+
     -   ### Comment:
+
         e.g.,
+
         ```
         {
             "masterID": {PostID},
@@ -94,8 +108,10 @@ mysql> source currSchema.sql;
             "timePosted": "2023-11-11 15:40:00"
         }
         ```
+
         -   returns code 200, PostID on success
         -   else error
+
     -   ### Comment on comment:
         e.g., (Assuming the above comment's PostID is 1)
         ```
@@ -111,10 +127,25 @@ mysql> source currSchema.sql;
         -   else error
 
 -   ### Delete: /api/post/delete
+
     e.g., (Assuming the above comment's PostID is 1)
+
     ```
     {
         "postID": {PostID}
+    }
+    ```
+
+    -   returns code 200 on success
+    -   else error
+
+-   ### Engagement: /api/engagement/react
+    e.g., (Assuming the above comment's PostID is 1)
+    ```
+    {
+        "userID": {User Roll Number},
+        "postID": {PostID},
+        "type": {"LIKE" / "DISLIKE" / "BOOKMARK"}
     }
     ```
     -   returns code 200 on success
