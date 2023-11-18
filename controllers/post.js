@@ -2,27 +2,41 @@ var pool = require('../db/index');
 const { v4: uuidv4 } = require('uuid');
 const structurePosts = require('../util/structurePosts');
 
+const Post = require('../models/post');
+
+
 exports.postCreate = (req, res) => {
-    var { masterID, parentID, userID, content, timePosted } = req.body;
-    var postID = uuidv4()
+    
+   
 
-    if (masterID == null) {
-        masterID = postID;
-    }
+    const {text,likedBy,dislikedBy,comments,postedBy,media,likeCount,dislikeCount,commentCount,bookmarkCount} = req.body;
 
-    pool.query(`INSERT INTO Post (PostID, MasterID, ParentID, UserID, Content, TimePosted, LastEdited) VALUES ('${postID}','${masterID}',${parentID != null ? `'${parentID}'` : parentID},${userID}, '${content}', '${timePosted}', '${timePosted}')`, (err, result) => {
-        if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-                res.json({ code: err.code })
-            }
-            else {
+    const newPost = new Post({
+        text,
+        likedBy,
+        dislikedBy,
+        comments,
+        postedBy,
+        media,
+        likeCount,
+        dislikeCount,
+        commentCount,
+        bookmarkCount
+    });
+
+    
+
+    newPost.save()
+        .then(() => {
+            res.json({ code: 200, postID: postID });
+        })
+        .catch((err) => {
+            if (err.code === 11000) {
+                res.json({ code: err.code });
+            } else {
                 throw err;
             }
-        }
-        else {
-            res.json({ code: 200, postID: postID });
-        }
-    });
+        });
 }
 
 exports.postDelete = (req, res) => {
