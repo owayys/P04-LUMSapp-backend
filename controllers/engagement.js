@@ -17,14 +17,14 @@ exports.engagementReact = (req, res) => {
     pool.query(`UPDATE Post SET ${metric} = ${metric} + 1 WHERE UserID = ${userID} AND PostID = '${postID}'`, (err, result) => {
         if (err) {
             if (err.code === 'ER_DUP_ENTRY') {
-                res.json({ code: err.code })
+                res.json({ err: err.code })
             }
             else {
                 throw err;
             }
         }
         else {
-            res.json({ code: 200 });
+            res.status(200);
         }
     });
 }

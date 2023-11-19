@@ -14,7 +14,7 @@ exports.postCreate = (req, res) => {
         pool.query(`UPDATE Post SET Comments = Comments + 1 WHERE UserID = ${userID} AND PostID = '${parentID}'`, (err, result) => {
             if (err) {
                 if (err.code === 'ER_DUP_ENTRY') {
-                    res.json({ code: err.code })
+                    res.json({ err: err.code })
                 }
                 else {
                     throw err;
@@ -26,14 +26,14 @@ exports.postCreate = (req, res) => {
     pool.query(`INSERT INTO Post (PostID, MasterID, ParentID, UserID, Content, TimePosted, LastEdited) VALUES ('${postID}','${masterID}',${parentID != null ? `'${parentID}'` : parentID},${userID}, '${content}', '${timePosted}', '${timePosted}')`, (err, result) => {
         if (err) {
             if (err.code === 'ER_DUP_ENTRY') {
-                res.json({ code: err.code })
+                res.json({ err: err.code })
             }
             else {
                 throw err;
             }
         }
         else {
-            res.json({ code: 200, postID: postID });
+            res.status(200).json({ postID: postID });
         }
     });
 }
@@ -58,10 +58,10 @@ exports.postDelete = (req, res) => {
 
     pool.query(`DELETE FROM Post WHERE PostID = '${postID}'`, (err, result) => {
         if (err) {
-            res.json({ error: err });
+            res.json({ err: err });
         }
         else {
-            res.json({ code: 200 });
+            res.status(200);
         }
     });
 }
@@ -71,10 +71,10 @@ exports.postGet = (req, res) => {
     console.log(postID)
     pool.query(`SELECT * FROM Post WHERE MasterID = '${postID}'`, (err, results) => {
         if (err) {
-            res.json({ error: err })
+            res.json({ err: err })
         } else {
             var structuredPosts = structurePosts(results)
-            res.json({ code: 200, results: structuredPosts });
+            res.status(200).json({ results: structuredPosts });
         }
     });
 }
@@ -83,10 +83,10 @@ exports.postFeed = (req, res) => {
     const { postLimit } = req.body;
     pool.query(`SELECT * FROM Post WHERE MasterID = PostID ORDER BY TimePosted DESC LIMIT ${postLimit}`, (err, results) => {
         if (err) {
-            res.json({ error: err })
+            res.json({ err: err })
         } else {
             var structuredPosts = structurePosts(results)
-            res.json({ code: 200, results: structuredPosts });
+            res.status(200).json({ results: structuredPosts });
         }
     });
 }
