@@ -5,6 +5,7 @@ import { getPin } from "../util/getPin.js";
 import { User } from "../models/user.js";
 import { sendToken } from "../util/sendToken.js";
 import { sendMail } from "../util/sendMail.js";
+import { Post } from "../models/post.js";
 
 export const userSignup = async (req, res) => {
   try {
@@ -199,6 +200,66 @@ export const logout = async (req, res) => {
       });
   } catch (error) {
     console.log("Error: Unable to logout");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const bookmarkPost = async (req, res) => {
+  try {
+    const { postId } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter all the fields",
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Could not authenticate user",
+      });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(400).json({
+        success: false,
+        message: "Post does not exist",
+      });
+    }
+
+    const index = user.bookmarks.indexOf(postId);
+    if (index !== -1) {
+      post.bookmarkCount -= 1;
+      await post.save();
+      user.bookmarks.splice(index, 1);
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Bookmark removed",
+      });
+    }
+
+    post.bookmarkCount += 1;
+    console.log(post);
+    await post.save();
+    user.bookmarks.push(postId);
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Post bookmarked",
+    });
+  } catch (error) {
+    console.log("Error: Unable to bookmark post");
     return res.status(500).json({
       success: false,
       message: error.message,

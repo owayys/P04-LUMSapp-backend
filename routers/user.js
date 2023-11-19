@@ -3,6 +3,7 @@ import {
   userVerify,
   logout,
   userLogin,
+  bookmarkPost,
 } from "../controllers/user.js";
 import express from "express";
 import { isAuthenticated } from "../middleware/auth.js";
@@ -12,10 +13,6 @@ router.post("/signup", userSignup);
 router.post("/verify", isAuthenticated, userVerify);
 router.post("/login", userLogin);
 router.get("/logout", isAuthenticated, logout);
-
-// router.post("/login", userLogin);
-router.get("/get", (req, res) => {
-  res.send("GET");
-});
+router.post("/bookmark", isAuthenticated, bookmarkPost);
 
 export default router;

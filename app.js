@@ -5,6 +5,8 @@ import fileUpload from "express-fileupload";
 import cors from "cors";
 
 import User from "./routers/user.js";
+import Post from "./routers/post.js";
+import Comment from "./routers/comment.js";
 // require("dotenv").config();
 
 // var connection = require("./db/index");
@@ -21,7 +23,7 @@ app.use(cookieParser());
 app.use(
   fileUpload({
     useTempFiles: true,
-    limits: { fileSize: 50 * 1024 * 1024 },
+    limits: { fileSize: 100 * 1024 * 1024 },
   })
 );
 
@@ -45,4 +47,6 @@ app.use(
 //   res.status(404).json({ code: 404 });
 // });
 
-app.use("/api", User);
+app.use("/api/user", User);
+app.use("/api/post", Post);
+app.use("/api/comment", Comment);
