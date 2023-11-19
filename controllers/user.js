@@ -19,7 +19,7 @@ exports.userLogin = (req, res) => {
         }
         else {
             if (results.length === 0 || !results[0]) {
-                res.status(401);
+                res.status(401).json({ err: "Unauthorized" });
             }
             else {
                 const hashed_password = eval(`results[0].Password`);

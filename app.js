@@ -32,5 +32,5 @@ app.get('/', (req, res) => {
 })
 
 app.get('*', (req, res) => {
-    res.status(404).json({ code: 404 });
+    res.status(404).json({ err: "Not found" });
 });

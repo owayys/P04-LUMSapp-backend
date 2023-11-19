@@ -10,5 +10,5 @@ const pool = mysql.createPool({
     connectionLimit: 100,
     multipleStatements: true
 });
-console.log('Database connection created')
+console.log('mySQL connection created')
 module.exports = pool
