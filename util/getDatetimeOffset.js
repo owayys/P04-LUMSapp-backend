@@ -1,4 +1,4 @@
-const getDatetime = (offset) => {
+const getDatetimeOffset = (offset) => {
     const currentDate = new Date();
 
     const futureDate = new Date(currentDate.getTime() + offset * 60 * 60 * 1000);
@@ -8,4 +8,4 @@ const getDatetime = (offset) => {
     return formattedDate;
 }
 
-module.exports = getDatetime
+module.exports = getDatetimeOffset
