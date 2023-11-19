@@ -228,7 +228,7 @@ export const deletePost = async (req, res) => {
       });
     }
 
-    console.log(post.postedBy.toString(), req.user._id.toString());
+    // console.log(post.postedBy.toString(), req.user._id.toString());
     if (post.postedBy.toString() !== req.user._id.toString()) {
       return res.status(400).json({
         success: false,
