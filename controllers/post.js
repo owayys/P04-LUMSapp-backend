@@ -3,8 +3,9 @@ const { v4: uuidv4 } = require('uuid');
 const structurePosts = require('../util/structurePosts');
 
 exports.postCreate = (req, res) => {
-    var { masterID, parentID, userID, content, timePosted } = req.body;
+    var { masterID, parentID, userID, content, timePosted, media } = req.body;
     var postID = uuidv4()
+    var err_flag = false;
 
     if (masterID == null) {
         masterID = postID;
@@ -13,23 +14,36 @@ exports.postCreate = (req, res) => {
     if (parentID != null) {
         pool.query(`UPDATE Post SET Comments = Comments + 1 WHERE UserID = ${userID} AND PostID = '${parentID}'`, (err, result) => {
             if (err) {
-                if (err.code === 'ER_DUP_ENTRY') {
-                    res.json({ err: err.code })
-                }
-                else {
-                    throw err;
+                if (err) {
+                    if (!err_flag) {
+                        err_flag = true
+                        res.json({ err: "Error updating Comment count" })
+                    }
                 }
             }
         });
     }
 
-    pool.query(`INSERT INTO Post (PostID, MasterID, ParentID, UserID, Content, TimePosted, LastEdited) VALUES ('${postID}','${masterID}',${parentID != null ? `'${parentID}'` : parentID},${userID}, '${content}', '${timePosted}', '${timePosted}')`, (err, result) => {
+    if (media.length != 0) {
+        for (const currLink of media) {
+            pool.query(`INSERT INTO PostMedia (PostID, MediaURL) VALUES ('${postID}', '${currLink}')`, (err, result) => {
+                if (err) {
+                    if (!err_flag) {
+                        err_flag = true
+                        res.json({ err: "Error inserting Media" });
+                    }
+                }
+            });
+        }
+    }
+
+    pool.query(`INSERT INTO Post (PostID, MasterID, ParentID, UserID, Content, TimePosted, LastEdited, HasMedia) VALUES ('${postID}','${masterID}',${parentID != null ? `'${parentID}'` : parentID},${userID}, '${content}', '${timePosted}', '${timePosted}', ${media.length != 0})`, (err, result) => {
         if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-                res.json({ err: err.code })
-            }
-            else {
-                throw err;
+            if (err) {
+                if (!err_flag) {
+                    err_flag = true
+                    res.json({ err: "Error inserting Post" })
+                }
             }
         }
         else {
