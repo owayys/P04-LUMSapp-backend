@@ -8,8 +8,10 @@ exports.postCreate = (req, res) => {
 
     if (masterID == null) {
         masterID = postID;
-    } else {
-        pool.query(`UPDATE Post SET Comments = Comments + 1 WHERE UserID = ${userID} AND PostID = '${masterID}'`, (err, result) => {
+    }
+
+    if (parentID != null) {
+        pool.query(`UPDATE Post SET Comments = Comments + 1 WHERE UserID = ${userID} AND PostID = '${parentID}'`, (err, result) => {
             if (err) {
                 if (err.code === 'ER_DUP_ENTRY') {
                     res.json({ code: err.code })
@@ -38,6 +40,21 @@ exports.postCreate = (req, res) => {
 
 exports.postDelete = (req, res) => {
     const { postID } = req.body;
+
+    pool.query(`SELECT ParentID FROM Post WHERE PostID = '${postID}'`, (err, result) => {
+        if (err) {
+            console.log(err)
+        }
+        var parentID = result[0].ParentID
+        if (parentID != null) {
+            pool.query(`UPDATE Post SET Comments = Comments - 1 WHERE PostID = '${parentID}'`, (err, result) => {
+                if (err) {
+                    console.log(err)
+                }
+            });
+        }
+    });
+
 
     pool.query(`DELETE FROM Post WHERE PostID = '${postID}'`, (err, result) => {
         if (err) {
