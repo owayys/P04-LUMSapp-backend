@@ -18,6 +18,7 @@ CREATE TABLE `Post` (
   `ParentID` varchar(36) DEFAULT NULL,
   `UserID` int NOT NULL,
   `Content` varchar(500) NOT NULL,
+  `HasMedia` tinyint(1) NOT NULL DEFAULT '0',
   `TimePosted` datetime DEFAULT NULL,
   `LastEdited` datetime DEFAULT NULL,
   `Likes` int NOT NULL DEFAULT '0',
@@ -32,6 +33,17 @@ CREATE TABLE `Post` (
   CONSTRAINT `Post_ibfk_2` FOREIGN KEY (`ParentID`) REFERENCES `Post` (`PostID`) ON DELETE CASCADE,
   CONSTRAINT `Post_ibfk_3` FOREIGN KEY (`UserID`) REFERENCES `User` (`ID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `PostMedia` (
+  `MediaID` int NOT NULL AUTO_INCREMENT,
+  `PostID` varchar(36) NOT NULL,
+  `MediaURL` text NOT NULL,
+  PRIMARY KEY (`MediaID`),
+  KEY `PostID` (`PostID`),
+  CONSTRAINT `PostMedia_ibfk_1` FOREIGN KEY (`PostID`) REFERENCES `Post` (`PostID`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
