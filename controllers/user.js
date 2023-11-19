@@ -51,15 +51,11 @@ exports.userSignup = (req, res) => {
         }
         pool.query(`INSERT INTO User (Name, ID, Password, Type, AuthPin, PinExpiry) VALUES ('${name}','${id}','${hashed_password}', '${type.toUpperCase()}', '${authPin}', '${pinExpiry}')`, (err, result) => {
             if (err) {
-                if (err.code === 'ER_DUP_ENTRY') {
-                    res.err().json({ err: err.code })
-                }
-                else {
-                    throw err;
-                }
+                res.json({ err: err })
             }
             else {
-                res.status(200);
+                const token = jwt.sign(id, process.env.JWT_secret);
+                res.status(200).json({ token });
             }
         });
     })
