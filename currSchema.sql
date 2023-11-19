@@ -42,6 +42,7 @@ CREATE TABLE `User` (
   `Bio` varchar(255) DEFAULT NULL,
   `Type` enum('STUDENT','COUNCIL','SOCIETY','ADMIN') NOT NULL,
   `AuthPin` varchar(6) NOT NULL,
+  `PinExpiry` datetime NOT NULL,
   `Verified` tinyint(1) NOT NULL DEFAULT '0',
   `IconUrl` varchar(256) DEFAULT NULL,
   PRIMARY KEY (`ID`)
