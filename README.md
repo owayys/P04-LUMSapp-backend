@@ -33,7 +33,7 @@ mysql> source currSchema.sql;
     }
     ```
 
-    -   returns code 200 on success
+    -   returns code 200, JWT on success
     -   else error
 
 -   ### Login: /api/user/login
@@ -44,7 +44,7 @@ mysql> source currSchema.sql;
         "password": "yo124"
     }
     ```
-    -   returns code 200 on success
+    -   returns code 200, JWT on success
     -   returns code 401 on incorrect details
     -   else error
 
@@ -58,6 +58,9 @@ mysql> source currSchema.sql;
     {
         "postID": {PostID}
     }
+    Headers: {
+        Authorization: {JWT}
+    }
     ```
 
     -   returns code 200, Post object on success
@@ -70,6 +73,9 @@ mysql> source currSchema.sql;
     ```
     {
         "postLimit": {Number of Posts you want}
+    }
+    Headers: {
+        Authorization: {JWT}
     }
     ```
 
@@ -88,7 +94,11 @@ mysql> source currSchema.sql;
             "parentID": null,
             "userID": {User Roll Number},
             "content": {Post content},
-            "timePosted": "2023-11-11 15:30:00"
+            "timePosted": "2023-11-11 15:30:00",
+            "media": [] <- String array of links
+        }
+        Headers: {
+            Authorization: {JWT}
         }
         ```
 
@@ -106,6 +116,10 @@ mysql> source currSchema.sql;
             "userID": {User Roll Number},
             "content": {Post content},
             "timePosted": "2023-11-11 15:40:00"
+            "media": [] <- String array of links
+        }
+        Headers: {
+            Authorization: {JWT}
         }
         ```
 
@@ -121,6 +135,10 @@ mysql> source currSchema.sql;
             "userID": {User Roll Number},
             "content": {Post content},
             "timePosted": "2023-11-11 15:50:00"
+            "media": [] <- String array of links
+        }
+        Headers: {
+            Authorization: {JWT}
         }
         ```
         -   returns code 200 on success
@@ -133,6 +151,10 @@ mysql> source currSchema.sql;
     ```
     {
         "postID": {PostID}
+        "userID": {User Roll Number}
+    }
+    Headers: {
+        Authorization: {JWT}
     }
     ```
 
@@ -146,6 +168,9 @@ mysql> source currSchema.sql;
         "userID": {User Roll Number},
         "postID": {PostID},
         "type": {"LIKE" / "DISLIKE" / "BOOKMARK"}
+    }
+    Headers: {
+        Authorization: {JWT}
     }
     ```
     -   returns code 200 on success
