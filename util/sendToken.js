@@ -6,6 +6,7 @@ export const sendToken = (res, user, statusCode, message) => {
     role: user.role,
     profile_picture: user.profile_picture,
     verified: user.verified,
+    bio: user.bio,
   };
 
   const token = user.getJWTToken();

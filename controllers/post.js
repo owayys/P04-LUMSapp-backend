@@ -1,6 +1,3 @@
-// var pool = require("../db/index");
-// const { v4: uuidv4 } = require("uuid");
-// const structurePosts = require("../util/structurePosts");
 import { User } from "../models/user.js";
 import { Post } from "../models/post.js";
 import { Comment } from "../models/comment.js";

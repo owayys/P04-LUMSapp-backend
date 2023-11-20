@@ -128,7 +128,7 @@ export const userVerify = async (req, res) => {
     user.otpExpire = null;
 
     await user.save();
-    logout(req, res);
+    sendToken(res, user, 200, "User verified successfully");
   } catch (error) {
     console.log("Error: Unable to verify user");
     res.status(500).json({
