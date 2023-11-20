@@ -207,6 +207,27 @@ export const logout = async (req, res) => {
   }
 };
 
+export const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User does not exist",
+      });
+    }
+
+    sendToken(res, user, 200, "User profile fetched successfully");
+  } catch (error) {
+    console.log("Error: Unable to get user profile");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const bookmarkPost = async (req, res) => {
   try {
     const { postId } = req.body;
