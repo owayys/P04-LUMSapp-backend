@@ -52,3 +52,44 @@ export const createComment = async (req, res) => {
     });
   }
 };
+
+export const getComments = async (req, res) => {
+  try {
+    const { postId } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter all the fields",
+      });
+    }
+
+    const post = await Post.findById(postId)
+      .populate("comments", "text postedBy createdAt likesCount dislikeCount")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "postedBy",
+          select: "fullname profile_picture",
+        },
+      });
+    if (!post) {
+      return res.status(400).json({
+        success: false,
+        message: "Post does not exist",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Comments fetched",
+      comments: post.comments,
+    });
+  } catch (error) {
+    console.log("Error: Unable to fetch comments");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

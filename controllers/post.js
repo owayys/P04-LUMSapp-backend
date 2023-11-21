@@ -16,7 +16,7 @@ export const createPost = async (req, res) => {
       });
     }
 
-    const user = User.findById(req.user._id);
+    const user = await User.findById(req.user._id);
 
     if (!user) {
       return res.status(400).json({
@@ -62,11 +62,22 @@ export const getFeed = async (req, res) => {
   try {
     const { page } = req.body;
 
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
     const posts = await Post.find()
       .sort({ createdAt: -1 })
       .skip(page * 10)
       .limit(10)
-      .select("text media likeCount dislikeCount commentCount bookmarkCount")
+      .select(
+        "text media likeCount dislikeCount commentCount bookmarkCount createdAt"
+      )
       .populate("postedBy", "fullname profile_picture");
 
     // console.log(posts);

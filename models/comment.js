@@ -23,6 +23,7 @@ const commentSchema = mongoose.Schema({
     ref: "User",
     required: true,
   },
+
   likeCount: {
     type: Number,
     default: 0,
