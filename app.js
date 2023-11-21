@@ -5,6 +5,8 @@ import fileUpload from "express-fileupload";
 import cors from "cors";
 
 import User from "./routers/user.js";
+import Post from "./routers/post.js";
+import Comment from "./routers/comment.js";
 // require("dotenv").config();
 
 // var connection = require("./db/index");
@@ -19,10 +21,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
-  fileUpload({
-    useTempFiles: true,
-    limits: { fileSize: 50 * 1024 * 1024 },
-  })
+    fileUpload({
+        useTempFiles: true,
+        limits: { fileSize: 100 * 1024 * 1024 },
+    })
 );
 
 // app.use("/api/user", require("./routers/user"));
@@ -45,4 +47,13 @@ app.use(
 //   res.status(404).json({ code: 404 });
 // });
 
-app.use("/api", User);
+app.use("/api/user", User);
+app.use("/api/post", Post);
+app.use("/api/comment", Comment);
+app.get('/', (req, res) => {
+    res.send('P04-LUMSapp-backend')
+})
+
+app.get('*', (req, res) => {
+    res.status(404).json({ err: "Not found" });
+});

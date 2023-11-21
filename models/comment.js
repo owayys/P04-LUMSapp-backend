@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
-const postSchema = mongoose.Schema({
+const commentSchema = mongoose.Schema({
   text: {
     type: String,
-    required: [true, "Please enter post text"],
-    maxLength: [4000, "Post text cannot exceed 4000 characters"],
+    required: [true, "Please enter comment text"],
+    maxLength: [2000, "Comment text cannot exceed 2000 characters"],
   },
   likedBy: [
     {
@@ -18,23 +18,12 @@ const postSchema = mongoose.Schema({
       ref: "User",
     },
   ],
-  comments: [
-    {
-      type: mongoose.Schema.ObjectId,
-      ref: "Comment",
-    },
-  ],
   postedBy: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
     required: true,
   },
-  media: [
-    {
-      public_id: String,
-      url: String,
-    },
-  ],
+
   likeCount: {
     type: Number,
     default: 0,
@@ -43,15 +32,6 @@ const postSchema = mongoose.Schema({
     type: Number,
     default: 0,
   },
-  commentCount: {
-    type: Number,
-    default: 0,
-  },
-  bookmarkCount: {
-    type: Number,
-    default: 0,
-  },
-
   createdAt: {
     type: Date,
     default: Date.now,
@@ -62,4 +42,4 @@ const postSchema = mongoose.Schema({
   },
 });
 
-export const Post = mongoose.model("Post", postSchema);
+export const Comment = mongoose.model("Comment", commentSchema);
