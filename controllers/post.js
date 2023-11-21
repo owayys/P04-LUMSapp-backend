@@ -71,14 +71,27 @@ export const getFeed = async (req, res) => {
       });
     }
 
-    const posts = await Post.find()
+    let posts = await Post.find()
       .sort({ createdAt: -1 })
       .skip(page * 10)
       .limit(10)
       .select(
-        "text media likeCount dislikeCount commentCount bookmarkCount createdAt"
+        "text media likeCount dislikeCount commentCount bookmarkCount likedBy dislikedBy"
       )
       .populate("postedBy", "fullname profile_picture");
+
+    const postWithLikedDislikedInfo = posts.map((post) => {
+      const isLikedbyUser = post.likedBy.includes(req.user.id);
+      const isDislikedbyUser = post.dislikedBy.includes(req.user.id);
+
+      const { likedBy, dislikedBy, ...postWithoutLikedByDislikedBy } = post;
+      return {
+        ...postWithoutLikedByDislikedBy._doc,
+        isLikedbyUser,
+        isDislikedbyUser,
+      };
+    });
+    posts = postWithLikedDislikedInfo;
 
     // console.log(posts);
     res.status(200).json({
