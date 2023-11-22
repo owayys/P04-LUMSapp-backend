@@ -10,7 +10,7 @@ export const sendMail = async (email, otp) => {
   });
 
   var mailOpts = {
-    from: "devhickerydickery@outlook.com",
+    from: "luminous.verify@gmail.com",
     to: email,
     subject: "Account Verification",
     text: "Hi there! Your generated OTP is " + otp + ".",
