@@ -7,6 +7,7 @@ import cors from "cors";
 import User from "./routers/user.js";
 import Post from "./routers/post.js";
 import Comment from "./routers/comment.js";
+import Transcript from "./routers/transcript.js";
 // require("dotenv").config();
 
 // var connection = require("./db/index");
@@ -50,26 +51,7 @@ app.use(
 app.use("/api/user", User);
 app.use("/api/post", Post);
 app.use("/api/comment", Comment);
-
-app.post('/api/transcript', (req , res) => {
-    let sampleFile;
-    let uploadPath;
-    if (!req.files || Object.keys(req.files).length === 0) {
-        return res.status(400).send('No files were uploaded.');
-      }
-    
-      // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
-      sampleFile = req.files.file;
-      uploadPath = '/workspaces/P04-LUMSapp-backend' + '/uploads/' + sampleFile.name;
-    
-      // Use the mv() method to place the file somewhere on your server
-      sampleFile.mv(uploadPath, function(err) {
-        if (err)
-          return res.status(500).send(err);
-    
-        res.send('File uploaded!');
-    });
-});
+app.use("/api/transcript", Transcript);
 
 app.get('/', (req, res) => {
     res.send('P04-LUMSapp-backend')
