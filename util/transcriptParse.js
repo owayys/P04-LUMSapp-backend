@@ -3,7 +3,7 @@
 import * as fs from 'fs'
 import pdf from 'pdf-parse'
 
-const transcriptParse = (filePath) => {
+const parseTranscript = (filePath) => {
     return new Promise((resolve, reject) => {
         let dataBuffer = fs.readFileSync(filePath);
         let student_info;
@@ -58,5 +58,5 @@ const transcriptParse = (filePath) => {
     });
 }
 
-export default transcriptParse;
+export default parseTranscript;
  

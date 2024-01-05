@@ -1,4 +1,4 @@
-import transcriptParse from "../util/transcriptParse.js";
+import parseTranscript from "../util/parseTranscript.js";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -27,7 +27,7 @@ export const parseTranscript = async (req, res) => {
         }
     })
     
-    transcriptParse(uploadPath)
+    parseTranscript(uploadPath)
         .then((parsedData) => {
             res.status(200).json({
                 success: true,
