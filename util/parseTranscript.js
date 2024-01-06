@@ -14,14 +14,17 @@ const parseTranscript = (filePath) => {
             let [stu_credits, stu_cgpa] = data.text.split('CREDITS')[3].split('\n')[2].split('TAKEN TOWARDS GPA')[1].split('CGPA');
             let admitted_year = data.text.split('Year Admitted:')[1].split('\n')[1].trim().split('-')[0];
             let semesters = data.text.split('CREDITS')[2].split(/\n\s*\n/).slice(1);
-            let course_info = [];
+            let sem_info = []
             for (let semester of semesters) {
+                let curr_sem = semester.split(/\n(.*)/s)[0].split('Semester ').join('');
                 let courses = semester.split(/\n(.*)/s)[1].split('\n');
+                let course_info = [];
                 
                 for (let course of courses) {
                     let lastDigitIndex = course.search(/\d(?!.*\d)/); // Find the index of the last digit
                     let course_grade = course.slice(lastDigitIndex + 1);
                     let tempString = course.slice(0, lastDigitIndex);
+                    let course_credits = course.substring(lastDigitIndex, lastDigitIndex + 1);
                     let secondSpaceIndex = tempString.indexOf(' ', tempString.indexOf(' ') + 1); // Find the index of the second space
                     let course_code = tempString.substring(0, secondSpaceIndex);
                     let course_name = tempString.substring(secondSpaceIndex + 1);
@@ -30,16 +33,23 @@ const parseTranscript = (filePath) => {
                         course_grade = course_grade.split('R')[0];
                     }
 
-                    if (course_code != '' && !course_grade.includes('#')) {
+                    if (course_code != '' && !course_grade.includes('#') && !course_grade.includes('W')) {
                         course_info.push(
                             {
                                 code: course_code,
                                 name: course_name,
+                                credits: parseInt(course_credits),
                                 grade: course_grade == '' ? null : course_grade
                             }
                         );
                     }
                 }
+                sem_info.push(
+                    {
+                        semester: curr_sem,
+                        course_info: course_info
+                    }
+                )
             }
             student_info = {
                 roll_number: stu_roll_number,
@@ -47,8 +57,7 @@ const parseTranscript = (filePath) => {
                 admitted: admitted_year,
                 credits: parseInt(stu_credits),
                 cgpa: parseFloat(stu_cgpa),
-                semesters: semesters.length,
-                course_info: course_info
+                semesters: sem_info
             }
             resolve(student_info)
         })
