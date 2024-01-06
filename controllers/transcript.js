@@ -5,7 +5,7 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export const parseTranscript = async (req, res) => {
+export const transcriptParser = async (req, res) => {
     let transcriptFile;
     let uploadPath;
     if (!req.files || Object.keys(req.files).length === 0) {
