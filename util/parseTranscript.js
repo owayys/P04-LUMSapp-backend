@@ -68,7 +68,7 @@ const parseTranscript = (file) => {
             resolve(!error_flag ? student_info : false)
         })
         .catch((err) => {
-            reject(err)
+            reject(false)
         })
     });
 }
