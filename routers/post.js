@@ -8,6 +8,8 @@ import {
   likePost,
   dislikePost,
   deletePost,
+  editPermission,
+  editPost,
 } from "../controllers/post.js";
 
 const router = express.Router();
@@ -15,7 +17,9 @@ router.post("/create", isAuthenticated, createPost);
 router.post("/feed", isAuthenticated, getFeed);
 router.post("/like", isAuthenticated, likePost);
 router.post("/dislike", isAuthenticated, dislikePost);
-router.delete("/delete", isAuthenticated, deletePost);
+router.post("/delete", isAuthenticated, deletePost);
+router.post("/editPermission", isAuthenticated, editPermission);
+router.post("/edit", isAuthenticated, editPost);
 
 export default router;
 
