@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import autopopulate from "mongoose-autopopulate";
 
 const commentSchema = mongoose.Schema({
   text: {
@@ -22,8 +23,10 @@ const commentSchema = mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: "User",
     required: true,
+    autopopulate: {
+      select: "fullname profile_picture",
+    },
   },
-
   likeCount: {
     type: Number,
     default: 0,
@@ -40,6 +43,29 @@ const commentSchema = mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  level: {
+    type: Number,
+    default: 0,
+  },
+
+  replies: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: "Comment",
+      autopopulate: true,
+    },
+  ],
+
+  level: {
+    type: Number,
+    default: 0,
+  },
 });
+
+
+// commentSchema.plugin(require("mongoose-autopopulate"));
+
+// export const Comment = mongoose.model("Comment", commentSchema);
+commentSchema.plugin(autopopulate);
 
 export const Comment = mongoose.model("Comment", commentSchema);
