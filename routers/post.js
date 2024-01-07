@@ -12,7 +12,7 @@ import {
 
 const router = express.Router();
 router.post("/create", isAuthenticated, createPost);
-router.get("/feed", isAuthenticated, getFeed);
+router.post("/feed", isAuthenticated, getFeed);
 router.post("/like", isAuthenticated, likePost);
 router.post("/dislike", isAuthenticated, dislikePost);
 router.delete("/delete", isAuthenticated, deletePost);
