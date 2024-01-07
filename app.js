@@ -8,6 +8,8 @@ import User from "./routers/user.js";
 import Post from "./routers/post.js";
 import Comment from "./routers/comment.js";
 import Transcript from "./routers/transcript.js";
+import Course from "./routers/course.js";
+
 // require("dotenv").config();
 
 // var connection = require("./db/index");
@@ -50,11 +52,16 @@ app.use("/api/user", User);
 app.use("/api/post", Post);
 app.use("/api/comment", Comment);
 app.use("/api/transcript", Transcript);
+app.use("/api/course", Course);
 
 app.get('/', (req, res) => {
     res.send('P04-LUMSapp-backend')
 })
 
-app.get('*', (req, res) => {
-    res.status(404).json({ err: "Not found" });
+app.get("/", (req, res) => {
+  res.send("P04-LUMSapp-backend");
+});
+
+app.get("*", (req, res) => {
+  res.status(404).json({ err: "Not found" });
 });
