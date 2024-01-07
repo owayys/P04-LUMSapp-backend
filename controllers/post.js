@@ -225,9 +225,8 @@ export const dislikePost = async (req, res) => {
 export const deletePost = async (req, res) => {
   try {
     const { postId } = req.body;
-
     if (!postId) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "Please enter all the fields",
       });
@@ -235,7 +234,7 @@ export const deletePost = async (req, res) => {
 
     const user = await User.findById(req.user._id);
     if (!user) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "Could not authenticate user",
       });
@@ -243,7 +242,7 @@ export const deletePost = async (req, res) => {
 
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "Post does not exist",
       });
@@ -251,7 +250,7 @@ export const deletePost = async (req, res) => {
 
     // console.log(post.postedBy.toString(), req.user._id.toString());
     if (post.postedBy.toString() !== req.user._id.toString()) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "You are not authorized to delete this post",
       });
@@ -272,6 +271,111 @@ export const deletePost = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+export const editPost = async (req, res) => {
+  try {
+    const { postId, text } = req.body;
+    if (!postId || !text) {
+      return res.status(200).json({
+        success: false,
+        message: "Please enter all the fields",
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(200).json({
+        success: false,
+        message: "Could not authenticate user",
+      });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(200).json({
+        success: false,
+        message: "Post does not exist",
+      });
+    }
+
+    // console.log(post.postedBy.toString(), req.user._id.toString());
+    if (post.postedBy.toString() !== req.user._id.toString()) {
+      return res.status(200).json({
+        success: false,
+        message: "You are not authorized to edit this post",
+      });
+    }
+
+    post.text = text;
+    await post.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Post edited",
+    });
+  } catch (error) {
+    console.log("Error: Unable to edit post");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const editPermission = async (req, res) => {
+  try {
+    // check whether the user is authorized to edit the post or not
+    const { postId } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter all the fields",
+        permission: false,
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Could not authenticate user",
+        permission: false,
+      });
+    }
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(400).json({
+        success: false,
+        message: "Post does not exist",
+        permission: false,
+      });
+    }
+    console.log(post.postedBy.toString(), req.user._id.toString());
+    if (post.postedBy.toString() !== req.user._id.toString()) {
+      console.log("Not Authorized to edit this post");
+      return res.status(200).json({
+        success: false,
+        message: "Not Authorized to edit this post",
+        permission: false,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Permission Granted",
+      permission: true,
+    });
+  } catch (error) {
+    console.log("Error: Unable to get Permission Parameters");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+      permission: false,
     });
   }
 };

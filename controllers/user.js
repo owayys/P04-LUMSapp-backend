@@ -140,6 +140,7 @@ export const userVerify = async (req, res) => {
 
 export const userLogin = async (req, res) => {
   try {
+    console.log("Logging in");
     let { email, password } = req.body;
     email = email.trim();
 
