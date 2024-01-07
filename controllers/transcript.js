@@ -13,11 +13,18 @@ export const transcriptParser = async (req, res) => {
 
     parseTranscript(transcriptFile.data)
         .then((parsedData) => {
-            res.status(200).json({
-                success: true,
-                message: "Transcript parsed successfully",
-                parsedData
-            });
+            if (parsedData) {
+                return res.status(200).json({
+                    success: true,
+                    message: "Transcript parsed successfully",
+                    parsedData
+                });
+            } else {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid Transcript.',
+                });
+            }
         })
         .catch((err) => {
             return res.status(500).json({
