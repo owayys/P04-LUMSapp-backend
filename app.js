@@ -14,6 +14,7 @@ import Transcript from "./routers/transcript.js";
 
 // const PORT = process.env.PORT || 8080;
 
+
 export const app = express();
 
 app.use(morgan("dev"));
@@ -22,10 +23,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
-    fileUpload({
-        useTempFiles: true,
-        limits: { fileSize: 100 * 1024 * 1024 },
-    })
+    fileUpload()
 );
 
 // app.use("/api/user", require("./routers/user"));

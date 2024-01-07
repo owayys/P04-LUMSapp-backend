@@ -3,12 +3,11 @@
 import * as fs from 'fs'
 import pdf from 'pdf-parse'
 
-const parseTranscript = (filePath) => {
+const parseTranscript = (file) => {
     return new Promise((resolve, reject) => {
-        let dataBuffer = fs.readFileSync(filePath);
         let student_info;
     
-        pdf(dataBuffer).then(function(data) {
+        pdf(file).then(function(data) {
             let stu_roll_number = data.text.split('Roll No. :')[1].split('\n')[1].split('-').join('').slice(2);
             let stu_major = data.text.split('Major:')[1].split('\n')[1]
             let [stu_credits, stu_cgpa] = data.text.split('CREDITS')[3].split('\n')[2].split('TAKEN TOWARDS GPA')[1].split('CGPA');
