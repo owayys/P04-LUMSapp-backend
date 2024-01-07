@@ -81,7 +81,6 @@ export const replyComment = async (req, res) => {
       });
     }
 
-    console.log(comment);
 
     const reply = await Comment.create({
       text,
