@@ -110,9 +110,9 @@ export const getFeed = async (req, res) => {
 
 export const getUserPosts = async (req, res) => {
   try {
-    const { userId, page } = req.body;
+    const { page } = req.body;
 
-    const user = await User.findById(userId);
+    const user = await User.findById(req.user._id);
 
     if (!user) {
       return res.status(400).json({
