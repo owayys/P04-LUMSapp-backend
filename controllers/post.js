@@ -121,7 +121,7 @@ export const getUserPosts = async (req, res) => {
       });
     }
 
-    let posts = await Post.find({ postedBy: userId })
+    let posts = await Post.find({ postedBy: req.user._id })
       .sort({ createdAt: -1 })
       .skip(page * 10)
       .limit(10)
