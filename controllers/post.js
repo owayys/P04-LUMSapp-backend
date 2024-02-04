@@ -108,6 +108,55 @@ export const getFeed = async (req, res) => {
   }
 };
 
+export const getUserPosts = async (req, res) => {
+  try {
+    const { userId, page } = req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    let posts = await Post.find({ postedBy: userId })
+      .sort({ createdAt: -1 })
+      .skip(page * 10)
+      .limit(10)
+      .select(
+        "text media likeCount dislikeCount commentCount bookmarkCount likedBy dislikedBy"
+      )
+      .populate("postedBy", "fullname profile_picture");
+
+    const postWithLikedDislikedInfo = posts.map((post) => {
+      const isLikedbyUser = post.likedBy.includes(req.user.id);
+      const isDislikedbyUser = post.dislikedBy.includes(req.user.id);
+
+      const { likedBy, dislikedBy, ...postWithoutLikedByDislikedBy } = post;
+      return {
+        ...postWithoutLikedByDislikedBy._doc,
+        isLikedbyUser,
+        isDislikedbyUser,
+      };
+    });
+    posts = postWithLikedDislikedInfo;
+
+    res.status(200).json({
+      success: true,
+      message: "User posts fetched successfully",
+      posts,
+    });
+  } catch (error) {
+    console.log("Error: Unable to get user posts");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const likePost = async (req, res) => {
   try {
     const { postId } = req.body;

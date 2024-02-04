@@ -5,6 +5,7 @@ import { isAuthenticated } from "../middleware/auth.js";
 import {
   createPost,
   getFeed,
+  getUserPosts,
   likePost,
   dislikePost,
   deletePost,
@@ -15,6 +16,7 @@ import {
 const router = express.Router();
 router.post("/create", isAuthenticated, createPost);
 router.post("/feed", isAuthenticated, getFeed);
+router.post("/posts", isAuthenticated, getUserPosts);
 router.post("/like", isAuthenticated, likePost);
 router.post("/dislike", isAuthenticated, dislikePost);
 router.post("/delete", isAuthenticated, deletePost);
