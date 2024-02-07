@@ -10,6 +10,7 @@ import Comment from "./routers/comment.js";
 import Transcript from "./routers/transcript.js";
 import Course from "./routers/course.js";
 import Instructor from "./routers/instructor.js";
+import Review from "./routers/reviews.js";
 
 // require("dotenv").config();
 
@@ -55,6 +56,7 @@ app.use("/api/comment", Comment);
 app.use("/api/transcript", Transcript);
 app.use("/api/course", Course);
 app.use("/api/instructor", Instructor);
+app.use("/api/review", Review);
 
 app.get('/', (req, res) => {
     res.send('P04-LUMSapp-backend')
