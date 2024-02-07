@@ -26,12 +26,6 @@ const instructorSchema = mongoose.Schema({
         type: String,
         required: [true, "Please enter instructor description"],
     },
-    instructorReviews: [
-        {
-            type: mongoose.Schema.ObjectId,
-            ref: "User",
-          },
-    ]
 })
 
 export const Instructor = mongoose.model("Instructor", instructorSchema);

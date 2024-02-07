@@ -13,9 +13,21 @@ export const getInstructor = async (req, res) => {
       });
     }
     const instructorName = req.body.body;
-
+    
     const instructorInfo = await Instructor.findOne({ instructorName: instructorName });
-
+    
+    if (!instructorInfo) {
+      return res.status(404).json({ success: false, message: "Instructor not found" });
+    }
+    
+    // Recalculate rating for the instructor
+    const reviews = await Review.find({ instructorID: instructorInfo._id });
+    const totalRating = reviews.reduce((sum, review) => sum + review.ratingGiven, 0);
+    const averageRating = Math.round(totalRating / reviews.length);   
+    instructorInfo.reviewRating = averageRating
+    instructorInfo.save()
+    
+    // Get all reviews for the instructor
     const reviewsForInstructor = await Review.find({ instructorID: instructorInfo._id });
 
     if (!instructorInfo) {
