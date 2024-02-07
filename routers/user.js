@@ -5,6 +5,7 @@ import {
   userLogin,
   bookmarkPost,
   getProfile,
+  updateProfile
 } from "../controllers/user.js";
 import express from "express";
 import { isAuthenticated } from "../middleware/auth.js";
@@ -16,5 +17,6 @@ router.post("/login", userLogin);
 router.get("/logout", isAuthenticated, logout);
 router.post("/bookmark", isAuthenticated, bookmarkPost);
 router.get("/me", isAuthenticated, getProfile);
+router.post("/update", isAuthenticated, updateProfile);
 
 export default router;
