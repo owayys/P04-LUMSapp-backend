@@ -92,6 +92,7 @@ export const getFeed = async (req, res) => {
       };
     });
     posts = postWithLikedDislikedInfo;
+    // console.log(posts);
 
     // console.log(posts);
     res.status(200).json({

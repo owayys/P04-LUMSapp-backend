@@ -112,7 +112,9 @@ export const replyComment = async (req, res) => {
 
 export const getComments = async (req, res) => {
   try {
-    const { postId } = req.body;
+    const { postId,_id } = req.body;
+    const userId = req.user._id;
+    // console.log(userId,postId)
 
     if (!postId) {
       return res.status(400).json({
@@ -121,15 +123,29 @@ export const getComments = async (req, res) => {
       });
     }
 
-    const post = await Post.findById(postId)
-      .populate("comments", "text postedBy createdAt likesCount dislikeCount replies")
-      .populate({
+    const post = await Post.findById(postId).populate({
         path: "comments",
         populate: {
           path: "postedBy",
           select: "fullname profile_picture",
         },
       });
+     
+
+      const a = post.comments.map(comment => {
+        const isLikedByUser = comment.likedBy.includes(userId);
+        const isDislikedByUser = comment.dislikedBy.includes(userId);
+
+        // console.log(comment.toObject())
+        // const rest = comment.toObject();
+        const { ...rest } = comment;
+        const cc = { ...rest._doc, isLikedByUser, isDislikedByUser };
+        // console.log(cc)
+        return cc;
+      });
+
+      
+
     if (!post) {
       return res.status(400).json({
         success: false,
@@ -140,7 +156,8 @@ export const getComments = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Comments fetched",
-      comments: post.comments,
+      comments: a,
+      userId:userId
     });
   } catch (error) {
     console.log("Error: Unable to fetch comments");
@@ -150,3 +167,264 @@ export const getComments = async (req, res) => {
     });
   }
 };
+
+export const voteComment = async (req, res) => {
+// console.log("");
+
+  try {
+    const {commentId,voteType}  = req.body;
+    console.log(commentId,voteType);
+
+    if (!commentId) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter all the fields",
+      });
+    }
+
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(400).json({
+        success: false,
+        message: "Comment does not exist",
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Could not authenticate user",
+      });
+    }
+
+  // up , down,del_up,del_down
+
+  if (voteType == "up") {
+    if (comment.likedBy.includes(req.user._id)) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already liked this comment",
+      });
+    }
+    if (comment.dislikedBy.includes(req.user._id)) {
+      comment.dislikedBy.pull(req.user._id);
+      comment.dislikeCount -= 1;
+    }
+    comment.likedBy.push(req.user._id);
+    comment.likeCount += 1;
+  }
+  else if (voteType == "down") {
+    if (comment.dislikedBy.includes(req.user._id)) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already disliked this comment",
+      });
+    }
+    if (comment.likedBy.includes(req.user._id)) {
+      comment.likedBy.pull(req.user._id);
+      comment.likeCount -= 1;
+    }
+    comment.dislikedBy.push(req.user._id);
+    comment.dislikeCount += 1;
+  }
+  else if (voteType == "del_up") {
+    if (!comment.likedBy.includes(req.user._id)) {
+      return res.status(400).json({
+        success: false,
+        message: "You have not liked this comment",
+      });
+    }
+    comment.likedBy.pull(req.user._id);
+    comment.likeCount -= 1;
+  }
+  else if (voteType == "del_down") {
+    if (!comment.dislikedBy.includes(req.user._id)) {
+      return res.status(400).json({
+        success: false,
+        message: "You have not disliked this comment",
+      });
+    }
+    comment.dislikedBy.pull(req.user._id);
+    comment.dislikeCount -= 1;
+  }
+  else {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid vote type",
+    });
+  }
+
+
+ 
+    await comment.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Vote updated"
+    });
+  } catch (error) {
+    console.log(`Error: Unable to vote comment`);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+
+export const getReplies = async (req, res) => {
+
+
+
+  try {
+    const { commentId } = req.body;
+    const userId = req.user._id;
+
+    if (!commentId) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter all the fields",
+      });
+    }
+
+    const comment = await Comment.findById(commentId).
+    populate({
+      path: "replies",
+      populate: {
+        path: "postedBy",
+        select: "fullname profile_picture",
+      },
+    });
+
+    const a = comment.replies.map(comment => {
+      const isLikedByUser = comment.likedBy.includes(userId);
+      const isDislikedByUser = comment.dislikedBy.includes(userId);
+
+      // console.log(comment.toObject())
+      // const rest = comment.toObject();
+      const { ...rest } = comment;
+      const cc = { ...rest._doc, isLikedByUser, isDislikedByUser };
+      // console.log(cc)
+      return cc;
+    });
+
+
+
+    // console.log(a)
+
+    if (!comment) {
+      return res.status(400).json({
+        success: false,
+        message: "Comment does not exist",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Replies fetched",
+      replies: a,
+    });
+
+  }
+  catch (error) {
+    console.log("Error: Unable to fetch replies");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export const deleteComment = async (req, res) => {
+  try {
+    const { commentId } = req.body;
+
+    if (!commentId) {
+      console.log("Please enter all the fields");
+      return res.status(400).json({
+        success: false,
+        message: "Please enter all the fields",
+      });
+    }
+
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      console.log("Comment does not exist");
+      return res.status(400).json({
+        success: false,
+        message: "Comment does not exist",
+      });
+    }
+
+    if (comment.postedBy._id.toString() !== req.user._id.toString()) {
+      console.log("You are not authorized to delete this comment");
+      return res.status(400).json({
+        success: false,
+        message: "You are not authorized to delete this comment",
+      });
+    }
+
+    const result = await comment.deleteOne({ _id: commentId });
+
+    // Remove any references to this comment from other documents
+  const resp = await Comment.updateMany(
+      { replies: commentId },
+      { $pull: { replies: commentId } }
+    );
+    console.log(resp)
+
+    return res.status(200).json({
+      success: true,
+      message: "Comment deleted",
+    });
+  } catch (error) {
+    console.log("Error: Unable to delete comment", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error: Unable to delete comment",
+    });
+  }
+};
+
+export const updateComment = async (req, res) => {
+  try {
+    const { commentId, text } = req.body;
+
+    if (!commentId || !text) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter all the fields",
+      });
+    }
+
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(400).json({
+        success: false,
+        message: "Comment does not exist",
+      });
+    }
+
+    if (comment.postedBy._id.toString() !== req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: "You are not authorized to update this comment",
+      });
+    }
+
+    comment.text = text;
+    await comment.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Comment updated",
+    });
+  } catch (error) {
+    console.log("Error: Unable to update comment");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}

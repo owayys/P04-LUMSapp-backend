@@ -52,7 +52,7 @@ const commentSchema = mongoose.Schema({
     {
       type: mongoose.Schema.ObjectId,
       ref: "Comment",
-      autopopulate: true,
+      autopopulate: false,
     },
   ],
 
@@ -66,6 +66,8 @@ const commentSchema = mongoose.Schema({
 // commentSchema.plugin(require("mongoose-autopopulate"));
 
 // export const Comment = mongoose.model("Comment", commentSchema);
+
+
 commentSchema.plugin(autopopulate);
 
 export const Comment = mongoose.model("Comment", commentSchema);
