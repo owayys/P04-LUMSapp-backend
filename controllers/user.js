@@ -1,5 +1,4 @@
 // var pool = require("../db/index");
-import bcrypt from "bcrypt";
 import { getPin } from "../util/getPin.js";
 
 import { User } from "../models/user.js";
