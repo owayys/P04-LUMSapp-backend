@@ -1,6 +1,6 @@
 import { User } from "../models/user.js";
 import { Review } from "../models/reviews.js";
-import { Instructor } from "../models/instructor.js"; // Import the Instructor model
+import { Instructor } from "../models/instructor.js"; 
 
 export const createReview = async (req, res) => {
   try {
@@ -28,6 +28,7 @@ export const createReview = async (req, res) => {
       reviewDescription: req.body.reviewDescription,
       instructorID: instructorInfo._id,
       instructorName: instructorName,
+      reviewedBy: req.user._id,
     });
 
     // Save the review to the database
@@ -45,28 +46,86 @@ export const createReview = async (req, res) => {
   }
 };
 
-// // Define pre-save middleware on the Review schema to update the instructor's data
-// reviewSchema.pre('save', async function(next) {
-//   try {
-//     // Find the instructor corresponding to the review
-//     const instructor = await Instructor.findById(this.instructorID);
+export const deleteReview = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
 
-//     if (!instructor) {
-//       throw new Error('Instructor not found');
-//     }
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Could not authenticate user",
+      });
+    }
 
-//     // Add the review to the instructor's reviews array
-//     instructor.instructorReviews.push(this._id);
+    const reviewID = req.body.reviewID;
+    // console.log(reviewID)
 
-//     // Update the review count and rating for the instructor
-//     instructor.reviewCount++;
-//     instructor.reviewRating = (instructor.reviewRating + this.ratingGiven )/ (instructor.reviewCount);
+    const review = await Review.findById(reviewID);
 
-//     // Save the updated instructor
-//     await instructor.save();
+    if (!review) {
+      return res.status(404).json({
+      success: false,
+      message: "Review not found",
+      });
+    }
 
-//     next();
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+    // Check if the review was created by the authenticated user
+    if (review.reviewedBy.toString() !== req.user._id.toString()) {
+      return res.status(401).json({
+      success: false,
+      message: "Unauthorized to delete this review",
+      });
+    }
+
+    // Delete the review from the database
+    await review.deleteOne({reviewID: reviewID, reviewedBy: req.user._id});
+
+    // Respond with success message
+    res.status(200).json({
+      success: true,
+      message: "Review deleted successfully",
+    });
+    
+  } catch (err) {
+    console.error("Error deleting review:", err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+}
+
+export const editReview = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Could not authenticate user",
+      });
+    }
+    
+    const reviewID = req.body.reviewID;
+    const review = await Review.findById(reviewID);
+
+    if (!review) {
+      return res.status(404).json({
+      success: false,
+      message: "Review not found",
+      });
+    }
+
+    review.reviewDescription = req.body.reviewDescription;
+    review.save()
+
+
+    // Respond with success message
+    res.status(200).json({
+      success: true,
+      message: "Review updated successfully",
+    });
+    
+  } catch (err) {
+    console.error("Error updating review:", err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+
+}

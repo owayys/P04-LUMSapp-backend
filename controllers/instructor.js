@@ -19,7 +19,7 @@ export const getInstructor = async (req, res) => {
     if (!instructorInfo) {
       return res.status(404).json({ success: false, message: "Instructor not found" });
     }
-    
+
     // Recalculate rating for the instructor
     const reviews = await Review.find({ instructorID: instructorInfo._id });
     const totalRating = reviews.reduce((sum, review) => sum + review.ratingGiven, 0);
@@ -34,7 +34,7 @@ export const getInstructor = async (req, res) => {
       return res.status(404).json({ success: false, message: "Instructor not found" });
     }
     else {
-      return res.status(200).json({ success: true, instructorInformation: instructorInfo, reviewsInformation: reviewsForInstructor});
+      return res.status(200).json({ success: true, instructorInformation: instructorInfo, userID: req.user._id, reviewsInformation: reviewsForInstructor});
     }
   }
   catch (err) {
