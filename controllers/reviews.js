@@ -16,11 +16,22 @@ export const createReview = async (req, res) => {
     const instructorName = req.body.instructorName;
     const instructorInfo = await Instructor.findOne({ instructorName: instructorName });
 
+    // if reviewed already
+    const review = await Review.findOne({ reviewedBy: req.user._id, instructorID: instructorInfo._id });
+    if (review) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already reviewed this instructor",
+      });
+    }
+
+    // if no image of user
     if (req.user.profile_picture.url === "")
     {
       req.user.profile_picture.url = "https://www.gravatar.com/avatar/"
     }
 
+    // create new reivew and submit
     const newReview = new Review({
       username: req.user.fullname,
       profilePicture: req.user.profile_picture.url,
