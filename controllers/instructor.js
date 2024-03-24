@@ -25,6 +25,11 @@ export const getInstructor = async (req, res) => {
     const totalRating = reviews.reduce((sum, review) => sum + review.ratingGiven, 0);
     const averageRating = Math.round(totalRating / reviews.length);   
     instructorInfo.reviewRating = averageRating
+
+    // Recalculate the count for the instructor
+    const totalcount = reviews.length;
+    instructorInfo.reviewCount = totalcount
+    
     instructorInfo.save()
     
     // Get all reviews for the instructor
