@@ -21,10 +21,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
+<<<<<<< Updated upstream
     fileUpload({
         useTempFiles: true,
         limits: { fileSize: 100 * 1024 * 1024 },
     })
+=======
+  fileUpload({
+    useTempFiles: true,
+    limits: { fileSize: 50 * 1024 * 1024 },
+  })
+>>>>>>> Stashed changes
 );
 
 // app.use("/api/user", require("./routers/user"));
@@ -50,9 +57,20 @@ app.use(
 app.use("/api/user", User);
 app.use("/api/post", Post);
 app.use("/api/comment", Comment);
+<<<<<<< Updated upstream
 app.get('/', (req, res) => {
     res.send('P04-LUMSapp-backend')
 })
+=======
+app.use("/api/transcript", Transcript);
+app.use("/api/course", Course);
+app.use("/api/instructor", Instructor);
+app.use("/api/review", Review);
+
+app.get("/", (req, res) => {
+  res.send("P04-LUMSapp-backend");
+});
+>>>>>>> Stashed changes
 
 app.get('*', (req, res) => {
     res.status(404).json({ err: "Not found" });

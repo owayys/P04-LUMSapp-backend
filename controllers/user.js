@@ -218,6 +218,10 @@ export const getProfile = async (req, res) => {
         message: "User does not exist",
       });
     }
+<<<<<<< Updated upstream
+=======
+    console.log(user);
+>>>>>>> Stashed changes
 
     sendToken(res, user, 200, "User profile fetched successfully");
   } catch (error) {
@@ -287,6 +291,68 @@ export const bookmarkPost = async (req, res) => {
       message: error.message,
     });
   }
+<<<<<<< Updated upstream
+=======
+};
+
+export const updateProfile = async (req, res) => {
+  console.log(req.body, req.files?.icon);
+  let { username, bio } = req.body;
+  let icon = req.files?.icon;
+
+  if (!username) {
+    return res.status(200).json({
+      success: false,
+      message: "Invalid username",
+    });
+  }
+  if (!bio) {
+    return res.status(200).json({
+      success: false,
+      message: "Invalid bio",
+    });
+  }
+  if (!icon) {
+    return res.status(200).json({
+      success: false,
+      message: "Invalid icon",
+    });
+  }
+
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    return res.status(200).json({
+      success: false,
+      message: "User does not exist",
+    });
+  }
+
+  // const result = await cloudinary.v2.uploader.upload_stream({
+  //     folder: `LUMSApp/icons/${user._id}`,
+  // });
+
+  cloudinary.v2.uploader
+    .upload_stream({}, async (err, result) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Error uploading data",
+        });
+      }
+      user.profile_picture.url = result.secure_url;
+      user.profile_picture.public_id = result.public_id;
+      user.bio = bio;
+      // user.fullname = username;
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Profile updated",
+      });
+    })
+    .end(icon.data);
+>>>>>>> Stashed changes
 };
 
 // exports.userLogin = (req, res) => {
