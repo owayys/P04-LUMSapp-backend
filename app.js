@@ -11,6 +11,8 @@ import Transcript from "./routers/transcript.js";
 import Course from "./routers/course.js";
 import Instructor from "./routers/instructor.js";
 import Review from "./routers/reviews.js";
+import Event from "./routers/event.js";
+import Location from "./routers/location.js";
 
 // require("dotenv").config();
 
@@ -59,6 +61,8 @@ app.use("/api/transcript", Transcript);
 app.use("/api/course", Course);
 app.use("/api/instructor", Instructor);
 app.use("/api/review", Review);
+app.use("/api/event", Event);
+app.use("/api/location", Location);
 
 app.get("/", (req, res) => {
     res.send("P04-LUMSapp-backend");
