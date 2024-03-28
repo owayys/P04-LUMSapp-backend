@@ -8,6 +8,8 @@ import User from "./routers/user.js";
 import Post from "./routers/post.js";
 import Comment from "./routers/comment.js";
 import Course from "./routers/course.js";
+import Event from "./routers/event.js";
+import Location from "./routers/location.js";
 
 // require("dotenv").config();
 
@@ -53,6 +55,8 @@ app.use("/api/user", User);
 app.use("/api/post", Post);
 app.use("/api/comment", Comment);
 app.use("/api/course", Course);
+app.use("/api/event", Event);
+app.use("/api/location", Location);
 
 app.get("/", (req, res) => {
   res.send("P04-LUMSapp-backend");
