@@ -30,7 +30,7 @@ const courseSchema = mongoose.Schema({
   },
   instructor: {
     type: String,
-    required: [true, "Please enter course instructor"],
+    required: [false, "Please enter course instructor"],
     maxLength: [200, "Course instructor cannot exceed 200 characters"],
   },
   description: {
@@ -40,7 +40,7 @@ const courseSchema = mongoose.Schema({
   },
   location: {
     type: String,
-    required: [true, "Please enter course location"],
+    required: [false, "Please enter course location"],
     maxLength: [200, "Course location cannot exceed 200 characters"],
   },
 });
