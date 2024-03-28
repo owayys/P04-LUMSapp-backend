@@ -18,7 +18,6 @@ import Review from "./routers/reviews.js";
 
 // const PORT = process.env.PORT || 8080;
 
-
 export const app = express();
 
 app.use(morgan("dev"));
@@ -27,7 +26,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
-    fileUpload()
+    fileUpload({
+        useTempFiles: true,
+        limits: { fileSize: 50 * 1024 * 1024 },
+    })
 );
 
 // app.use("/api/user", require("./routers/user"));
@@ -58,14 +60,14 @@ app.use("/api/course", Course);
 app.use("/api/instructor", Instructor);
 app.use("/api/review", Review);
 
-app.get('/', (req, res) => {
-    res.send('P04-LUMSapp-backend')
-})
+app.get("/", (req, res) => {
+    res.send("P04-LUMSapp-backend");
+});
 
 app.get("/", (req, res) => {
-  res.send("P04-LUMSapp-backend");
+    res.send("P04-LUMSapp-backend");
 });
 
 app.get("*", (req, res) => {
-  res.status(404).json({ err: "Not found" });
+    res.status(404).json({ err: "Not found" });
 });

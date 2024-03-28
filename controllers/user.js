@@ -218,7 +218,6 @@ export const getProfile = async (req, res) => {
                 message: "User does not exist",
             });
         }
-        console.log(user);
 
         sendToken(res, user, 200, "User profile fetched successfully");
     } catch (error) {

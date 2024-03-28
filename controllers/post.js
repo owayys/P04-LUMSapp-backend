@@ -7,9 +7,9 @@ import fs from "fs";
 export const createPost = async (req, res) => {
   try {
     const { text } = req.body;
-    const media = req.files?.media;
+    const media = req.files ? Object.values(req.files) : [];
 
-    if (!text && !media) {
+    if (!text && media.length === 0) {
       return res.status(400).json({
         success: false,
         message: "Please enter text or upload a file",
@@ -17,7 +17,6 @@ export const createPost = async (req, res) => {
     }
 
     const user = await User.findById(req.user._id);
-
     if (!user) {
       return res.status(400).json({
         success: false,
@@ -26,19 +25,24 @@ export const createPost = async (req, res) => {
     }
 
     let mediaUrls = [];
-    if (media) {
-      for (let i = 0; i < media.length; i++) {
-        const result = await cloudinary.v2.uploader.upload(media[i], {
-          folder: `LUMSApp/posts/${user._id}`,
-        });
-        mediaUrls.push({
-          public_id: result.public_id,
-          url: result.secure_url,
-        });
-      }
-      fs.rmSync("./tmp", { recursive: true });
+    if (media.length > 0) {
+      // Upload each file to Cloudinary and store the URLs
+      const uploadPromises = media.map((file) =>
+        cloudinary.v2.uploader.upload(file.tempFilePath, {
+          resource_type: "auto", // 'auto' allows Cloudinary to detect the file type
+        })
+      );
+
+      // Await all the Cloudinary upload promises
+      const uploadResults = await Promise.all(uploadPromises);
+      // Extract the URLs and other desired data
+      mediaUrls = uploadResults.map((result) => ({
+        url: result.secure_url,
+        public_id: result.public_id,
+      }));
     }
 
+    // Create the post with the text and media URLs
     const post = await Post.create({
       text,
       postedBy: req.user._id,
@@ -48,9 +52,10 @@ export const createPost = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Post created successfully",
+      post, // return the created post as well
     });
   } catch (error) {
-    console.log("Error: Unable to create post");
+    console.log("Error: Unable to create post", error);
     return res.status(500).json({
       success: false,
       message: error.message,
