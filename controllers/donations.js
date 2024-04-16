@@ -13,7 +13,7 @@ export const getDonations = async (req, res) => {
     }
 
     const donation = await Donation.find();
-    console.log("Donations Data:", donation)
+    // console.log("Donations Data:", donation)
 
     return res.status(200).json({
       success: true,
