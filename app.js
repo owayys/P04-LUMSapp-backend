@@ -13,6 +13,7 @@ import Instructor from "./routers/instructor.js";
 import Review from "./routers/reviews.js";
 import Event from "./routers/event.js";
 import Location from "./routers/location.js";
+import Donations from "./routers/donations.js";
 
 // require("dotenv").config();
 
@@ -63,6 +64,8 @@ app.use("/api/instructor", Instructor);
 app.use("/api/review", Review);
 app.use("/api/event", Event);
 app.use("/api/location", Location);
+app.use("/api/donations", Donations);
+
 
 app.get("/", (req, res) => {
     res.send("P04-LUMSapp-backend");
