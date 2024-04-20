@@ -11,7 +11,10 @@ import {
   deletePost,
   editPermission,
   editPost,
+  getBookmarkedPosts,
+  bookmarkPost,
 } from "../controllers/post.js";
+
 
 const router = express.Router();
 router.post("/create", isAuthenticated, createPost);
@@ -22,6 +25,8 @@ router.post("/dislike", isAuthenticated, dislikePost);
 router.post("/delete", isAuthenticated, deletePost);
 router.post("/editPermission", isAuthenticated, editPermission);
 router.post("/edit", isAuthenticated, editPost);
+router.post("/bookmarks", isAuthenticated, getBookmarkedPosts);
+router.post("/bookmark", isAuthenticated, bookmarkPost);
 
 export default router;
 
