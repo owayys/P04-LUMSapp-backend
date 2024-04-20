@@ -40,11 +40,14 @@ export const getInstructor = async (req, res) => {
     // Get all reviews for the instructor
     const reviewsForInstructor = await Review.find({ instructorID: instructorInfo._id });
 
+    // Get user image
+    const userImageURL = user.profile_picture.url;
+
     if (!instructorInfo) {
       return res.status(404).json({ success: false, message: "Instructor not found" });
     }
     else {
-      return res.status(200).json({ success: true, instructorInformation: instructorInfo, userID: req.user._id, reviewsInformation: reviewsForInstructor});
+      return res.status(200).json({ success: true, instructorInformation: instructorInfo, userID: req.user._id, requesteduserImageURL: userImageURL, reviewsInformation: reviewsForInstructor});
     }
   }
   catch (err) {
