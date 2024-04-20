@@ -1,6 +1,10 @@
 import { Expo } from "expo-server-sdk";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, get, child } from "firebase/database";
+import { config } from "dotenv";
+config({
+    path: "./config.env",
+});
 
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,
@@ -10,7 +14,7 @@ const firebaseConfig = {
     storageBucket: "lumsapp.appspot.com",
     messagingSenderId: process.env.FIREBASE_SENDER_ID,
     appId: process.env.FIREBASE_APP_ID,
-    measurementId: process.env.FIREBEASE_MEASUREMENT_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID,
 };
 
 const expo = new Expo();

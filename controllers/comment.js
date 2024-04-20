@@ -41,18 +41,20 @@ export const createComment = async (req, res) => {
         post.commentCount += 1;
         await post.save();
 
-        await Notification.create({
-            actor: req.user._id,
-            recipient: post.postedBy._id,
-            entity: post._id,
-            type: "comment",
-            onModel: "Post",
-        });
+        if (req.user._id !== post.postedBy._id) {
+            await Notification.create({
+                actor: req.user._id,
+                recipient: post.postedBy._id,
+                entity: post._id,
+                type: "comment",
+                onModel: "Post",
+            });
 
-        sendNotification(post.postedBy._id, {
-            title: comment.postedBy.fullname + " commented on your post",
-            body: comment.text,
-        });
+            sendNotification(post.postedBy._id, {
+                title: comment.postedBy.fullname + " commented on your post",
+                body: comment.text,
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -106,18 +108,20 @@ export const replyComment = async (req, res) => {
         comment.commentCount += 1;
         await comment.save();
 
-        await Notification.create({
-            actor: req.user._id,
-            recipient: comment.postedBy._id,
-            entity: comment._id,
-            type: "reply",
-            onModel: "Comment",
-        });
+        if (req.user._id !== comment.postedBy._id) {
+            await Notification.create({
+                actor: req.user._id,
+                recipient: comment.postedBy._id,
+                entity: comment._id,
+                type: "reply",
+                onModel: "Comment",
+            });
 
-        sendNotification(comment.postedBy._id, {
-            title: reply.postedBy.fullname + " replied to your comment",
-            body: reply.text,
-        });
+            sendNotification(comment.postedBy._id, {
+                title: reply.postedBy.fullname + " replied to your comment",
+                body: reply.text,
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -189,6 +193,58 @@ export const getComments = async (req, res) => {
     }
 };
 
+export const getUserComments = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        const { page } = req.body;
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const comments = await Comment.find({ postedBy: user._id })
+            .skip(page * 10)
+            .limit(10)
+            .populate({
+                path: "replies",
+                populate: {
+                    path: "replies",
+                },
+            });
+
+        const commentsWithPosts = [];
+
+        await Promise.all(
+            comments.map(async (comment) => {
+                const post = await Post.findOne({
+                    comments: comment._id,
+                }).populate("postedBy", "fullname profile_picture");
+
+                commentsWithPosts.push({
+                    comment,
+                    post,
+                });
+            })
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "User comments fetched successfully",
+            commentsWithPosts,
+        });
+    } catch (error) {
+        console.log("Error: Unable to get user comments");
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 export const voteComment = async (req, res) => {
     // console.log("");
 
@@ -235,18 +291,20 @@ export const voteComment = async (req, res) => {
             comment.likedBy.push(req.user._id);
             comment.likeCount += 1;
 
-            await Notification.create({
-                actor: req.user._id,
-                recipient: comment.postedBy._id,
-                entity: comment._id,
-                type: "like",
-                onModel: "Comment",
-            });
+            if (req.user._id !== comment.postedBy._id) {
+                await Notification.create({
+                    actor: req.user._id,
+                    recipient: comment.postedBy._id,
+                    entity: comment._id,
+                    type: "like",
+                    onModel: "Comment",
+                });
 
-            sendNotification(comment.postedBy._id, {
-                title: req.user.fullname + " liked your comment",
-                body: comment.text,
-            });
+                sendNotification(comment.postedBy._id, {
+                    title: req.user.fullname + " liked your comment",
+                    body: comment.text,
+                });
+            }
         } else if (voteType == "down") {
             if (comment.dislikedBy.includes(req.user._id)) {
                 return res.status(400).json({
@@ -267,6 +325,13 @@ export const voteComment = async (req, res) => {
                     message: "You have not liked this comment",
                 });
             }
+            await Notification.deleteMany({
+                actor: req.user._id,
+                recipient: comment.postedBy._id,
+                entity: comment._id,
+                type: "like",
+                onModel: "Comment",
+            });
             comment.likedBy.pull(req.user._id);
             comment.likeCount -= 1;
         } else if (voteType == "del_down") {
@@ -393,6 +458,10 @@ export const deleteComment = async (req, res) => {
             { $pull: { replies: commentId } }
         );
         console.log(resp);
+
+        await Notification.deleteMany({
+            entity: comment._id,
+        });
 
         return res.status(200).json({
             success: true,

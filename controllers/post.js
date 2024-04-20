@@ -200,6 +200,14 @@ export const likePost = async (req, res) => {
             post.likeCount -= 1;
             await post.save();
 
+            await Notification.deleteMany({
+                actor: req.user._id,
+                recipient: post.postedBy._id,
+                entity: post._id,
+                type: "like",
+                onModel: "Post",
+            });
+
             return res.status(200).json({
                 success: true,
                 message: "Like removed",
@@ -210,18 +218,20 @@ export const likePost = async (req, res) => {
         post.likeCount += 1;
         await post.save();
 
-        await Notification.create({
-            actor: req.user._id,
-            recipient: post.postedBy._id,
-            entity: post._id,
-            type: "like",
-            onModel: "Post",
-        });
+        if (req.user._id !== post.postedBy._id) {
+            await Notification.create({
+                actor: req.user._id,
+                recipient: post.postedBy._id,
+                entity: post._id,
+                type: "like",
+                onModel: "Post",
+            });
 
-        sendNotification(post.postedBy._id, {
-            title: req.user.fullname + " liked your post",
-            body: post.text,
-        });
+            sendNotification(post.postedBy._id, {
+                title: req.user.fullname + " liked your post",
+                body: post.text,
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -269,6 +279,14 @@ export const dislikePost = async (req, res) => {
             post.dislikedBy.splice(index, 1);
             post.dislikeCount -= 1;
             await post.save();
+
+            await Notification.deleteMany({
+                actor: req.user._id,
+                recipient: post.postedBy._id,
+                entity: post._id,
+                type: "like",
+                onModel: "Post",
+            });
 
             return res.status(200).json({
                 success: true,
@@ -332,6 +350,10 @@ export const deletePost = async (req, res) => {
         }
 
         await Post.findByIdAndDelete(postId);
+
+        await Notification.deleteMany({
+            entity: post._id,
+        });
 
         return res.status(200).json({
             success: true,
