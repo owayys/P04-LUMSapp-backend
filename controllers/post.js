@@ -89,6 +89,7 @@ export const getFeed = async (req, res) => {
         const postWithLikedDislikedInfo = posts.map((post) => {
             const isLikedbyUser = post.likedBy.includes(req.user.id);
             const isDislikedbyUser = post.dislikedBy.includes(req.user.id);
+            const isBookmarkedByUser = user.bookmarks.includes(post._id);
 
             const { likedBy, dislikedBy, ...postWithoutLikedByDislikedBy } =
                 post;
@@ -96,6 +97,7 @@ export const getFeed = async (req, res) => {
                 ...postWithoutLikedByDislikedBy._doc,
                 isLikedbyUser,
                 isDislikedbyUser,
+                isBookmarkedByUser,
             };
         });
         posts = postWithLikedDislikedInfo;
@@ -142,12 +144,15 @@ export const getUserPosts = async (req, res) => {
             const isLikedbyUser = post.likedBy.includes(req.user.id);
             const isDislikedbyUser = post.dislikedBy.includes(req.user.id);
 
+            const isBookmarkedByUser = user.bookmarks.includes(post._id);
+
             const { likedBy, dislikedBy, ...postWithoutLikedByDislikedBy } =
                 post;
             return {
                 ...postWithoutLikedByDislikedBy._doc,
                 isLikedbyUser,
                 isDislikedbyUser,
+                isBookmarkedByUser,
             };
         });
         posts = postWithLikedDislikedInfo;
@@ -159,6 +164,129 @@ export const getUserPosts = async (req, res) => {
         });
     } catch (error) {
         console.log("Error: Unable to get user posts");
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+export const bookmarkPost = async (req, res) => {
+    try {
+        const { postId } = req.body;
+
+        if (!postId) {
+            return res.status(400).json({
+                success: false,
+                message: "Please enter all the fields",
+            });
+        }
+
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const post = await Post.findById(postId);
+
+        if (!post) {
+            return res.status(400).json({
+                success: false,
+                message: "Post does not exist",
+            });
+        }
+
+        const index = user.bookmarks.indexOf(postId); // check if the post is already bookmarked
+        if (index !== -1) {
+            user.bookmarks.splice(index, 1);
+            post.bookmarkCount -= 1;
+            await user.save();
+            await post.save();
+
+            return res.status(200).json({
+                success: true,
+                message: "Post removed from bookmarks",
+            });
+        } else {
+            // if the post is not bookmarked
+            user.bookmarks.push(postId);
+
+            post.bookmarkCount += 1;
+            await post.save();
+            await user.save();
+
+            return res.status(200).json({
+                success: true,
+                message: "Post bookmarked",
+            });
+        } // end of else
+    } catch (error) {
+        console.log("Error: Unable to bookmark post");
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    } // end of catch
+};
+
+export const getBookmarkedPosts = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        // const page = req.body.page;
+        const pageSize = 10;
+        const currentPage = parseInt(req.body.page) || 1;
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        let userWithBookmarks = await User.findById(req.user._id).populate({
+            path: "bookmarks",
+            options: {
+                // sort: { createdAt: -1 }, // Sorting bookmarks by creation time, descending
+                skip: (currentPage - 1) * pageSize, // Calculate skip
+                limit: pageSize, // Set limit
+            },
+            populate: {
+                path: "postedBy",
+                select: "fullname profile_picture",
+            },
+        });
+        console.log(userWithBookmarks.bookmarks);
+
+        let posts = userWithBookmarks.bookmarks;
+
+        const postWithLikedDislikedInfo = posts.map((post) => {
+            const isLikedbyUser = post.likedBy.includes(req.user.id);
+            const isDislikedbyUser = post.dislikedBy.includes(req.user.id);
+            const isBookmarkedByUser = user.bookmarks.includes(post._id);
+
+            const { likedBy, dislikedBy, ...postWithoutLikedByDislikedBy } =
+                post;
+            return {
+                ...postWithoutLikedByDislikedBy._doc,
+                isLikedbyUser,
+                isDislikedbyUser,
+                isBookmarkedByUser,
+            };
+        });
+        posts = postWithLikedDislikedInfo;
+
+        res.status(200).json({
+            success: true,
+            message: "Bookmarked posts fetched successfully",
+            posts,
+        });
+    } catch (error) {
+        console.log("Error: Unable to get bookmarked posts");
         return res.status(500).json({
             success: false,
             message: error.message,

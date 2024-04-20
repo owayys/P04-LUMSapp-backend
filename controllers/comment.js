@@ -72,7 +72,7 @@ export const createComment = async (req, res) => {
 
 export const replyComment = async (req, res) => {
     try {
-        const { commentId, text } = req.body;
+        const { postId, commentId, text } = req.body;
 
         if (!commentId || !text) {
             return res.status(400).json({
@@ -122,6 +122,16 @@ export const replyComment = async (req, res) => {
                 body: reply.text,
             });
         }
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(400).json({
+                success: false,
+                message: "Post does not exist",
+            });
+        }
+
+        post.commentCount += 1;
+        await post.save();
 
         return res.status(200).json({
             success: true,
@@ -423,7 +433,7 @@ export const getReplies = async (req, res) => {
 
 export const deleteComment = async (req, res) => {
     try {
-        const { commentId } = req.body;
+        const { postId, commentId } = req.body;
 
         if (!commentId) {
             console.log("Please enter all the fields");
@@ -452,16 +462,29 @@ export const deleteComment = async (req, res) => {
 
         const result = await comment.deleteOne({ _id: commentId });
 
+        const lengthReplies = comment.replies.length;
+
         // Remove any references to this comment from other documents
         const resp = await Comment.updateMany(
             { replies: commentId },
             { $pull: { replies: commentId } }
         );
-        console.log(resp);
 
         await Notification.deleteMany({
             entity: comment._id,
         });
+
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(400).json({
+                success: false,
+                message: "Post does not exist",
+            });
+        }
+
+        post.commentCount -= 1 + lengthReplies;
+
+        await post.save();
 
         return res.status(200).json({
             success: true,
