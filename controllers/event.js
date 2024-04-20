@@ -12,8 +12,9 @@ export const createEvent = async (req, res) => {
       !description ||
       !startTime ||
       !endTime ||
-      !location ||
-      !category
+      !location
+      // ||
+      // !category
     ) {
       return res.status(400).json({
         success: false,
@@ -51,6 +52,14 @@ export const createEvent = async (req, res) => {
       });
     }
 
+    let temp_cat = "";
+
+    if (category) {
+      temp_cat = category;
+    } else {
+      temp_cat = "General";
+    }
+
     const event = await Event.create({
       title,
       description,
@@ -59,7 +68,7 @@ export const createEvent = async (req, res) => {
       location: loc._id,
       locationName: loc.name,
       coordinates: loc.coordinates,
-      category,
+      category: temp_cat,
       postedBy: user.fullname,
       image: {
         public_id: "",
