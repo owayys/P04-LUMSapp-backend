@@ -370,8 +370,16 @@ export const deletePost = async (req, res) => {
 
 export const editPost = async (req, res) => {
     try {
-        const { postId, text } = req.body;
-        if (!postId || !text) {
+        const { text, postId } = req.body;
+        const media = req.files ? Object.values(req.files) : [];
+        if (!text && media.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Please enter text or upload a file",
+            });
+        }
+
+        if (!postId) {
             return res.status(200).json({
                 success: false,
                 message: "Please enter all the fields",
@@ -402,7 +410,27 @@ export const editPost = async (req, res) => {
             });
         }
 
+        // this will probably upload the copies of the files to cloudinary (since we are editing so it might make new copies of the files and upload it)
+        let mediaUrls = [];
+        if (media.length > 0) {
+            // Upload each file to Cloudinary and store the URLs
+            const uploadPromises = media.map((file) =>
+                cloudinary.v2.uploader.upload(file.tempFilePath, {
+                    resource_type: "auto", // 'auto' allows Cloudinary to detect the file type
+                })
+            );
+
+            // Await all the Cloudinary upload promises
+            const uploadResults = await Promise.all(uploadPromises);
+            // Extract the URLs and other desired data
+            mediaUrls = uploadResults.map((result) => ({
+                url: result.secure_url,
+                public_id: result.public_id,
+            }));
+        }
+
         post.text = text;
+        post.media = mediaUrls;
         await post.save();
 
         return res.status(200).json({
