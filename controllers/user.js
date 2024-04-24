@@ -6,6 +6,7 @@ import { sendToken } from "../util/sendToken.js";
 import { sendMail } from "../util/sendMail.js";
 import { Post } from "../models/post.js";
 import cloudinary from "cloudinary";
+import * as FirebaseService from "../services/FirebaseService.js";
 
 export const userSignup = async (req, res) => {
     try {
@@ -190,6 +191,12 @@ export const userLogin = async (req, res) => {
 export const logout = async (req, res) => {
     try {
         console.log("Logout");
+        try {
+            await FirebaseService.deleteToken(req.user._id);
+            console.log("Deleted user push token");
+        } catch (error) {
+            console.log("Error: Unable to delete push token");
+        }
         return res
             .status(200)
             .cookie("token", null, {
@@ -210,7 +217,6 @@ export const logout = async (req, res) => {
 
 export const getProfile = async (req, res) => {
     try {
-        console.log(req)
         const user = await User.findById(req.user._id);
 
         if (!user) {
@@ -307,12 +313,6 @@ export const updateProfile = async (req, res) => {
             message: "Invalid bio",
         });
     }
-    if (!icon) {
-        return res.status(200).json({
-            success: false,
-            message: "Invalid icon",
-        });
-    }
 
     const user = await User.findById(req.user._id);
 
@@ -323,30 +323,42 @@ export const updateProfile = async (req, res) => {
         });
     }
 
+    if (icon) {
+        cloudinary.v2.uploader
+            .upload_stream({}, async (err, result) => {
+                if (err) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Error uploading data",
+                    });
+                } else {
+                    user.profile_picture.url = result.secure_url;
+                    user.profile_picture.public_id = result.public_id;
+                }
+                user.bio = bio;
+                user.fullname = username;
+                await user.save();
+
+                return res.status(200).json({
+                    success: true,
+                    message: "Profile updated",
+                });
+            })
+            .end(icon.data);
+    } else {
+        user.fullname = username;
+        user.bio = bio;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Profile updated",
+        });
+    }
+
     // const result = await cloudinary.v2.uploader.upload_stream({
     //     folder: `LUMSApp/icons/${user._id}`,
     // });
-
-    cloudinary.v2.uploader
-        .upload_stream({}, async (err, result) => {
-            if (err) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Error uploading data",
-                });
-            }
-            user.profile_picture.url = result.secure_url;
-            user.profile_picture.public_id = result.public_id;
-            user.bio = bio;
-            // user.fullname = username;
-            await user.save();
-
-            return res.status(200).json({
-                success: true,
-                message: "Profile updated",
-            });
-        })
-        .end(icon.data);
 };
 
 // exports.userLogin = (req, res) => {

@@ -30,6 +30,10 @@ export const saveToken = async (userId, token) => {
     set(ref(db, `userTokens/${userId}/`), payload);
 };
 
+export const deleteToken = async (userId) => {
+    set(ref(db, `userTokens/${userId}/`), null);
+};
+
 export const getToken = async (userId) => {
     const values = (await get(child(dbRef, `userTokens/${userId}/`))).val();
     return values ?? {};
