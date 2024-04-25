@@ -24,10 +24,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
-    fileUpload({
-        useTempFiles: true,
-        limits: { fileSize: 50 * 1024 * 1024 },
-    })
+  fileUpload({
+    useTempFiles: false,
+    limits: { fileSize: 50 * 1024 * 1024 },
+  })
 );
 
 app.use("/api/user", User);
@@ -43,9 +43,9 @@ app.use("/api/notification", Notification);
 app.use("/api/donations", Donations);
 
 app.get("/", (req, res) => {
-    res.send("P04-LUMSapp-backend");
+  res.send("P04-LUMSapp-backend");
 });
 
 app.get("*", (req, res) => {
-    res.status(404).json({ err: "Not found" });
+  res.status(404).json({ err: "Not found" });
 });
