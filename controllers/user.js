@@ -361,6 +361,97 @@ export const updateProfile = async (req, res) => {
     // });
 };
 
+export const forgotPassword = async (req, res) => {
+    try {
+        let { email } = req.body;
+        email = email.trim();
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const otp = getPin(6);
+
+        await sendMail(email, otp);
+
+        user.resetPasswordOtp = otp;
+        user.resetPasswordOtpExpire = Date.now() + 60 * 1000 * 10;
+
+        await user.save();
+
+        sendToken(res, user, 200, "OTP sent to your email");
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { otp } = req.body;
+
+        const user = await User.findById(req.user._id);
+
+        if (
+            user.resetPasswordOtp !== otp ||
+            user.resetPasswordOtpExpire < Date.now()
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP or OTP expired",
+            });
+        }
+
+        user.resetPasswordOtp = null;
+        user.resetPasswordOtpExpire = null;
+
+        await user.save();
+        res.status(200).json({
+            success: true,
+            message: "OTP verified",
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+export const settingPassword = async (req, res) => {
+    try {
+        const { newPassword } = req.body;
+
+        if (!newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Please enter password",
+            });
+        }
+
+        const user = await User.findById(req.user._id);
+
+        user.password = newPassword;
+
+        await user.save();
+
+        logout(req, res);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 // exports.userLogin = (req, res) => {
 //   try {
 //     const { email, password } = req.body;

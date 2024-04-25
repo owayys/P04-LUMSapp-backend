@@ -5,7 +5,10 @@ import {
   userLogin,
   bookmarkPost,
   getProfile,
-  updateProfile
+  updateProfile,
+  forgotPassword,
+  resetPassword,
+  settingPassword,
 } from "../controllers/user.js";
 import express from "express";
 import { isAuthenticated } from "../middleware/auth.js";
@@ -18,5 +21,8 @@ router.get("/logout", isAuthenticated, logout);
 router.post("/bookmark", isAuthenticated, bookmarkPost);
 router.get("/me", isAuthenticated, getProfile);
 router.post("/update", isAuthenticated, updateProfile);
+router.post("/forgot", forgotPassword);
+router.post("/reset", resetPassword);
+router.post("/setting", settingPassword);
 
 export default router;

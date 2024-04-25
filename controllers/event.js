@@ -69,7 +69,7 @@ export const createEvent = async (req, res) => {
       locationName: loc.name,
       coordinates: loc.coordinates,
       category: temp_cat,
-      postedBy: user.fullname,
+      postedBy: user._id,
       image: {
         public_id: "",
         url: "",
@@ -100,7 +100,20 @@ export const getEvents = async (req, res) => {
       });
     }
 
-    const events = await Event.find();
+    const todayDate = new Date();
+
+    const events = await Event.find({
+      startTime: {
+        $gte: new Date(
+          todayDate.getFullYear(),
+          todayDate.getMonth(),
+          todayDate.getDate(),
+          1
+        ),
+      },
+    }).populate("postedBy", "fullname _id");
+
+    console.log(events);
 
     return res.status(200).json({
       success: true,

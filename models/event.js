@@ -42,7 +42,8 @@ const eventSchema = mongoose.Schema({
     url: String,
   },
   postedBy: {
-    type: String,
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
     required: true,
   },
   createdAt: {
