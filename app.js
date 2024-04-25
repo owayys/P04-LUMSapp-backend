@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
     fileUpload({
-        useTempFiles: true,
+        useTempFiles: false,
         limits: { fileSize: 50 * 1024 * 1024 },
     })
 );
