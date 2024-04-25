@@ -5,10 +5,10 @@ export const transcriptParser = async (req, res) => {
     if (!req.files || Object.keys(req.files).length === 0) {
         return res.status(400).json({
             success: false,
-            message: 'No files were uploaded.',
+            message: "No files were uploaded.",
         });
     }
-    
+
     transcriptFile = req.files.file;
 
     parseTranscript(transcriptFile.data)
@@ -17,12 +17,12 @@ export const transcriptParser = async (req, res) => {
                 return res.status(200).json({
                     success: true,
                     message: "Transcript parsed successfully",
-                    parsedData
+                    parsedData,
                 });
             } else {
                 return res.status(400).json({
                     success: false,
-                    message: 'Invalid Transcript.',
+                    message: "Invalid Transcript.",
                 });
             }
         })
