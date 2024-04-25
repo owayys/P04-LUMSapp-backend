@@ -25,25 +25,28 @@ export const createPost = async (req, res) => {
             });
         }
 
+        const uploadMedia = (file) => {
+            return new Promise((resolve, reject) => {
+                cloudinary.v2.uploader
+                    .upload_stream({}, (err, result) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve({
+                                url: result.secure_url,
+                                public_id: result.public_id,
+                            });
+                        }
+                    })
+                    .end(file.data);
+            });
+        };
+
         let mediaUrls = [];
-        if (media.length > 0) {
-            // Upload each file to Cloudinary and store the URLs
-            const uploadPromises = media.map((file) =>
-                cloudinary.v2.uploader.upload(file.tempFilePath, {
-                    resource_type: "auto", // 'auto' allows Cloudinary to detect the file type
-                })
-            );
 
-            // Await all the Cloudinary upload promises
-            const uploadResults = await Promise.all(uploadPromises);
-            // Extract the URLs and other desired data
-            mediaUrls = uploadResults.map((result) => ({
-                url: result.secure_url,
-                public_id: result.public_id,
-            }));
-        }
+        const promises = media.map(uploadMedia);
+        mediaUrls = await Promise.all(promises);
 
-        // Create the post with the text and media URLs
         const post = await Post.create({
             text,
             postedBy: req.user._id,
@@ -538,24 +541,26 @@ export const editPost = async (req, res) => {
             });
         }
 
-        // this will probably upload the copies of the files to cloudinary (since we are editing so it might make new copies of the files and upload it)
+        const uploadMedia = (file) => {
+            return new Promise((resolve, reject) => {
+                cloudinary.v2.uploader
+                    .upload_stream({}, (err, result) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve({
+                                url: result.secure_url,
+                                public_id: result.public_id,
+                            });
+                        }
+                    })
+                    .end(file.data);
+            });
+        };
         let mediaUrls = [];
-        if (media.length > 0) {
-            // Upload each file to Cloudinary and store the URLs
-            const uploadPromises = media.map((file) =>
-                cloudinary.v2.uploader.upload(file.tempFilePath, {
-                    resource_type: "auto", // 'auto' allows Cloudinary to detect the file type
-                })
-            );
 
-            // Await all the Cloudinary upload promises
-            const uploadResults = await Promise.all(uploadPromises);
-            // Extract the URLs and other desired data
-            mediaUrls = uploadResults.map((result) => ({
-                url: result.secure_url,
-                public_id: result.public_id,
-            }));
-        }
+        const promises = media.map(uploadMedia);
+        mediaUrls = await Promise.all(promises);
 
         post.text = text;
         post.media = mediaUrls;
