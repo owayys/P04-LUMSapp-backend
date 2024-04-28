@@ -30,19 +30,19 @@
 import sgMail from "@sendgrid/mail";
 
 export const sendMail = async (email, otp) => {
-  sgMail.setApiKey(process.env.SG_MAIL_API_KEY);
-  const msg = {
-    to: email, // Change to your recipient
-    from: "luminous.verify@gmail.com", // Change to your verified sender
-    subject: "Lumina OTP Verification",
-    text: "Hi there! Your generated OTP is " + otp + ".",
-  };
-  sgMail
-    .send(msg)
-    .then(() => {
-      console.log("Email sent");
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+    sgMail.setApiKey(process.env.SG_MAIL_API_KEY);
+    const msg = {
+        to: email, // Change to your recipient
+        from: "luminous.verify@gmail.com", // Change to your verified sender
+        subject: "Lumina OTP Verification",
+        text: "Hi there! Your generated OTP is " + otp + ".",
+    };
+    sgMail
+        .send(msg)
+        .then(() => {
+            console.log("Email sent");
+        })
+        .catch((error) => {
+            console.error(error);
+        });
 };
