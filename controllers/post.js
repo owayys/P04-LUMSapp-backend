@@ -168,7 +168,7 @@ export const getUserPosts = async (req, res) => {
   }
 };
 
-export const bookmarkPost = async (req, res) => {
+export const unbookmarkPost = async (req, res) => {
 
   try {
 
@@ -213,6 +213,64 @@ export const bookmarkPost = async (req, res) => {
         message: "Post removed from bookmarks",
       });
     } else {  // if the post is not bookmarked  
+      return res.status(200).json({
+        success: true,
+        message: "Post not bookmarked",
+      });
+    } // end of else
+  }
+  catch (error) {
+    console.log("Error: Unable to unbookmark post");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  } // end of catch
+}
+
+
+export const bookmarkPost = async (req, res) => {
+
+  try {
+
+    const { postId } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter all the fields",
+      });
+    }
+
+    const user
+      = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const post
+      = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(400).json({
+        success: false,
+        message: "Post does not exist",
+      });
+    }
+
+    const index = user.bookmarks.indexOf(postId); // check if the post is already bookmarked
+    if (index !== -1) {
+
+    
+      return res.status(200).json({
+        success: true,
+        message: "Post already bookmarked",
+      });
+    } else {  // if the post is not bookmarked  
       user.bookmarks.push(postId);
 
       post.bookmarkCount += 1;
@@ -244,7 +302,7 @@ export const getBookmarkedPosts = async (req, res) => {
 
     // const page = req.body.page;
     const pageSize = 10;
-    const currentPage = parseInt(req.body.page) || 1;
+    const currentPage = parseInt(req.body.page);
 
 
 
