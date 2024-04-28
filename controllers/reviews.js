@@ -38,7 +38,7 @@ export const createReview = async (req, res) => {
       ratingGiven: req.body.ratingGiven,
       reviewDescription: req.body.reviewDescription,
       instructorID: instructorInfo._id,
-      instructorName: instructorName,
+      instructorName: instructorInfo.instructorName,
       reviewedBy: req.user._id,
     });
 

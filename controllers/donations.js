@@ -26,6 +26,33 @@ export const getDonations = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal server error" })
   }
 }
+
+export const deleteSpecificDonation = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Could not authenticate user",
+      });
+    }
+
+    console.log("Donations Data:", req.body.donationId)
+    const donation = await Donation.findByIdAndDelete(req.body.donationId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Donations deleted successfully",
+    });    
+
+  }
+  catch (err) {
+    return res.status(500).json({ success: false, message: "Internal server error" })
+  }
+}
+
+
 export const getSpecificDonation = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
