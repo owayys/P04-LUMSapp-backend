@@ -13,6 +13,7 @@ import {
   editPost,
   getBookmarkedPosts,
   bookmarkPost,
+  unbookmarkPost,
 } from "../controllers/post.js";
 
 
@@ -27,6 +28,7 @@ router.post("/editPermission", isAuthenticated, editPermission);
 router.post("/edit", isAuthenticated, editPost);
 router.post("/bookmarks", isAuthenticated, getBookmarkedPosts);
 router.post("/bookmark", isAuthenticated, bookmarkPost);
+router.post("/unbookmark", isAuthenticated, unbookmarkPost);
 
 export default router;
 
