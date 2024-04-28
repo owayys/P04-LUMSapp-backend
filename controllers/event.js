@@ -113,11 +113,49 @@ export const getEvents = async (req, res) => {
       },
     }).populate("postedBy", "fullname _id");
 
-    console.log(events);
-
     return res.status(200).json({
       success: true,
       message: "Events retrieved successfully",
+      events,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+export const mostRecentEvent = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Could not authenticate user",
+      });
+    }
+
+    const todayDate = new Date();
+
+    const events = await Event.findOne({
+      startTime: {
+        $gte: new Date(
+          todayDate.getFullYear(),
+          todayDate.getMonth(),
+          todayDate.getDate(),
+          1
+        ),
+      },
+    })
+      .sort({ dateField: 1 })
+      .limit(1)
+      .populate("postedBy", "fullname _id");
+
+    return res.status(200).json({
+      success: true,
+      message: "Most recent event retrieved successfully",
       events,
     });
   } catch (error) {

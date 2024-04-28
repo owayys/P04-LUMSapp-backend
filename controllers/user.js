@@ -2,6 +2,8 @@
 import { getPin } from "../util/getPin.js";
 
 import { User } from "../models/user.js";
+import { Event } from "../models/event.js";
+import { Donation } from "../models/donations.js";
 import { sendToken } from "../util/sendToken.js";
 import { sendMail } from "../util/sendMail.js";
 import { Post } from "../models/post.js";
@@ -9,534 +11,494 @@ import cloudinary from "cloudinary";
 import * as FirebaseService from "../services/FirebaseService.js";
 
 export const userSignup = async (req, res) => {
-    try {
-        let { name, email, password } = req.body;
+  try {
+    let { name, email, password } = req.body;
 
-        if (!name || !email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "Please enter all the fields",
-            });
-        }
-
-        email = email.trim();
-
-        const domain = email.split("@")[1];
-
-        if (domain !== "lums.edu.pk") {
-            return res.status(400).json({
-                success: false,
-                message: "Please enter a valid LUMS email ID",
-            });
-        }
-
-        const id = email.split("@")[0];
-        const regex = /^[0-9]+$/;
-
-        if (!regex.test(id) || (id.length !== 8 && id !== "studentcouncil")) {
-            return res.status(400).json({
-                success: false,
-                message: "Please enter a valid LUMS email ID",
-            });
-        }
-
-        let user = await User.findOne({ email });
-
-        if (user) {
-            //   console.log(user.verified);
-            return res.status(400).json({
-                success: false,
-                message: "User already exists",
-            });
-        }
-
-        if (password.length < 6) {
-            return res.status(400).json({
-                success: false,
-                message: "Password must be atleast 6 characters long",
-            });
-        }
-
-        const otp = getPin(6);
-        let role;
-
-        if (id === "studentcouncil") {
-            role = "council";
-        } else {
-            role = "student";
-        }
-
-        await sendMail(email, otp);
-
-        user = await User.create({
-            fullname: name,
-            email,
-            password,
-            role,
-            otp,
-            otpExpire: Date.now() + 5 * 60 * 1000,
-            profile_picture: {
-                public_id: "",
-                url: "",
-            },
-        });
-
-        sendToken(res, user, 201, "OTP sent successfully");
-    } catch (error) {
-        console.log("Error: Unable to signup");
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter all the fields",
+      });
     }
+
+    email = email.trim();
+
+    const domain = email.split("@")[1];
+
+    if (domain !== "lums.edu.pk") {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid LUMS email ID",
+      });
+    }
+
+    const id = email.split("@")[0];
+    const regex = /^[0-9]+$/;
+
+    if (!regex.test(id) || (id.length !== 8 && id !== "studentcouncil")) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid LUMS email ID",
+      });
+    }
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+      //   console.log(user.verified);
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be atleast 6 characters long",
+      });
+    }
+
+    const otp = getPin(6);
+    let role;
+
+    if (id === "studentcouncil") {
+      role = "council";
+    } else {
+      role = "student";
+    }
+
+    await sendMail(email, otp);
+
+    user = await User.create({
+      fullname: name,
+      email,
+      password,
+      role,
+      otp,
+      otpExpire: Date.now() + 5 * 60 * 1000,
+      profile_picture: {
+        public_id: "",
+        url: "",
+      },
+    });
+
+    sendToken(res, user, 201, "OTP sent successfully");
+  } catch (error) {
+    console.log("Error: Unable to signup");
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 export const userVerify = async (req, res) => {
-    try {
-        // console.log("Verifying");
-        const otp = req.body.otp;
+  try {
+    // console.log("Verifying");
+    const otp = req.body.otp;
 
-        if (!otp) {
-            return res.status(400).json({
-                success: false,
-                message: "Please enter the OTP",
-            });
-        }
-
-        const user = await User.findById(req.user._id);
-
-        if (!user) {
-            return res.status(400).json({
-                success: false,
-                message: "User does not exist",
-            });
-        }
-
-        if (user.otp !== otp) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid OTP",
-            });
-        } else if (user.otpExpire < Date.now()) {
-            return res.status(400).json({
-                success: false,
-                message: "OTP expired",
-            });
-        }
-
-        user.verified = true;
-        user.otp = null;
-        user.otpExpire = null;
-
-        await user.save();
-        sendToken(res, user, 200, "User verified successfully");
-    } catch (error) {
-        console.log("Error: Unable to verify user");
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-    }
-};
-
-export const userLogin = async (req, res) => {
-    try {
-        console.log("Logging in");
-        let { email, password } = req.body;
-        email = email.trim();
-
-        if (!email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "Please enter all the fields",
-            });
-        }
-
-        let user = await User.findOne({ email }).select("+password");
-
-        if (!user) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid email or password",
-            });
-        }
-
-        // console.log(user.email);
-        if (!user.verified) {
-            return res.status(400).json({
-                success: false,
-                message: "Please verify your email",
-            });
-        }
-
-        const isMatch = await user.comparePassword(password);
-
-        if (!isMatch) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid email or password",
-            });
-        }
-
-        sendToken(res, user, 200, "Logged in successfully");
-    } catch (error) {
-        console.log("Error: Unable to login");
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-    }
-};
-
-export const logout = async (req, res) => {
-    try {
-        console.log("Logout");
-        try {
-            await FirebaseService.deleteToken(req.user._id);
-            console.log("Deleted user push token");
-        } catch (error) {
-            console.log("Error: Unable to delete push token");
-        }
-        return res
-            .status(200)
-            .cookie("token", null, {
-                expires: new Date(Date.now()),
-            })
-            .json({
-                success: true,
-                message: "Logged out",
-            });
-    } catch (error) {
-        console.log("Error: Unable to logout");
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-    }
-};
-
-export const getProfile = async (req, res) => {
-    try {
-        const user = await User.findById(req.user._id);
-
-        if (!user) {
-            return res.status(400).json({
-                success: false,
-                message: "User does not exist",
-            });
-        }
-
-        sendToken(res, user, 200, "User profile fetched successfully");
-    } catch (error) {
-        console.log("Error: Unable to get user profile");
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-    }
-};
-
-export const bookmarkPost = async (req, res) => {
-    try {
-        const { postId } = req.body;
-
-        if (!postId) {
-            return res.status(400).json({
-                success: false,
-                message: "Please enter all the fields",
-            });
-        }
-
-        const user = await User.findById(req.user._id);
-
-        if (!user) {
-            return res.status(400).json({
-                success: false,
-                message: "Could not authenticate user",
-            });
-        }
-
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(400).json({
-                success: false,
-                message: "Post does not exist",
-            });
-        }
-
-        const index = user.bookmarks.indexOf(postId);
-        if (index !== -1) {
-            post.bookmarkCount -= 1;
-            await post.save();
-            user.bookmarks.splice(index, 1);
-            await user.save();
-
-            return res.status(200).json({
-                success: true,
-                message: "Bookmark removed",
-            });
-        }
-
-        post.bookmarkCount += 1;
-        console.log(post);
-        await post.save();
-        user.bookmarks.push(postId);
-        await user.save();
-
-        return res.status(200).json({
-            success: true,
-            message: "Post bookmarked",
-        });
-    } catch (error) {
-        console.log("Error: Unable to bookmark post");
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-    }
-};
-
-export const updateProfile = async (req, res) => {
-    console.log(req.body, req.files?.icon);
-    let { username, bio } = req.body;
-    let icon = req.files?.icon;
-
-    if (!username) {
-        return res.status(200).json({
-            success: false,
-            message: "Invalid username",
-        });
-    }
-    if (!bio) {
-        return res.status(200).json({
-            success: false,
-            message: "Invalid bio",
-        });
+    if (!otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter the OTP",
+      });
     }
 
     const user = await User.findById(req.user._id);
 
     if (!user) {
-        return res.status(200).json({
-            success: false,
-            message: "User does not exist",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "User does not exist",
+      });
     }
 
-    if (icon) {
-        cloudinary.v2.uploader
-            .upload_stream({}, async (err, result) => {
-                if (err) {
-                    return res.status(400).json({
-                        success: false,
-                        message: "Error uploading data",
-                    });
-                } else {
-                    user.profile_picture.url = result.secure_url;
-                    user.profile_picture.public_id = result.public_id;
-                }
-                user.bio = bio;
-                user.fullname = username;
-                await user.save();
+    if (user.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    } else if (user.otpExpire < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired",
+      });
+    }
 
-                return res.status(200).json({
-                    success: true,
-                    message: "Profile updated",
-                });
-            })
-            .end(icon.data);
-    } else {
-        user.fullname = username;
+    user.verified = true;
+    user.otp = null;
+    user.otpExpire = null;
+
+    await user.save();
+    sendToken(res, user, 200, "User verified successfully");
+  } catch (error) {
+    console.log("Error: Unable to verify user");
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const userLogin = async (req, res) => {
+  try {
+    console.log("Logging in");
+    let { email, password } = req.body;
+    email = email.trim();
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter all the fields",
+      });
+    }
+
+    let user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // console.log(user.email);
+    if (!user.verified) {
+      return res.status(400).json({
+        success: false,
+        message: "Please verify your email",
+      });
+    }
+
+    const isMatch = await user.comparePassword(password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    sendToken(res, user, 200, "Logged in successfully");
+  } catch (error) {
+    console.log("Error: Unable to login");
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    console.log("Logout");
+    try {
+      await FirebaseService.deleteToken(req.user._id);
+      console.log("Deleted user push token");
+    } catch (error) {
+      console.log("Error: Unable to delete push token");
+    }
+    return res
+      .status(200)
+      .cookie("token", null, {
+        expires: new Date(Date.now()),
+      })
+      .json({
+        success: true,
+        message: "Logged out",
+      });
+  } catch (error) {
+    console.log("Error: Unable to logout");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User does not exist",
+      });
+    }
+
+    sendToken(res, user, 200, "User profile fetched successfully");
+  } catch (error) {
+    console.log("Error: Unable to get user profile");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const bookmarkPost = async (req, res) => {
+  try {
+    const { postId } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter all the fields",
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Could not authenticate user",
+      });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(400).json({
+        success: false,
+        message: "Post does not exist",
+      });
+    }
+
+    const index = user.bookmarks.indexOf(postId);
+    if (index !== -1) {
+      post.bookmarkCount -= 1;
+      await post.save();
+      user.bookmarks.splice(index, 1);
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Bookmark removed",
+      });
+    }
+
+    post.bookmarkCount += 1;
+    console.log(post);
+    await post.save();
+    user.bookmarks.push(postId);
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Post bookmarked",
+    });
+  } catch (error) {
+    console.log("Error: Unable to bookmark post");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  console.log(req.body, req.files?.icon);
+  let { username, bio } = req.body;
+  let icon = req.files?.icon;
+
+  if (!username) {
+    return res.status(200).json({
+      success: false,
+      message: "Invalid username",
+    });
+  }
+  if (!bio) {
+    return res.status(200).json({
+      success: false,
+      message: "Invalid bio",
+    });
+  }
+
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    return res.status(200).json({
+      success: false,
+      message: "User does not exist",
+    });
+  }
+
+  if (icon) {
+    cloudinary.v2.uploader
+      .upload_stream({}, async (err, result) => {
+        if (err) {
+          return res.status(400).json({
+            success: false,
+            message: "Error uploading data",
+          });
+        } else {
+          user.profile_picture.url = result.secure_url;
+          user.profile_picture.public_id = result.public_id;
+        }
         user.bio = bio;
+        user.fullname = username;
         await user.save();
 
         return res.status(200).json({
-            success: true,
-            message: "Profile updated",
+          success: true,
+          message: "Profile updated",
         });
-    }
+      })
+      .end(icon.data);
+  } else {
+    user.fullname = username;
+    user.bio = bio;
+    await user.save();
 
-    // const result = await cloudinary.v2.uploader.upload_stream({
-    //     folder: `LUMSApp/icons/${user._id}`,
-    // });
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated",
+    });
+  }
+
+  // const result = await cloudinary.v2.uploader.upload_stream({
+  //     folder: `LUMSApp/icons/${user._id}`,
+  // });
 };
 
 export const forgotPassword = async (req, res) => {
-    try {
-        let { email } = req.body;
-        email = email.trim();
+  try {
+    let { email } = req.body;
+    email = email.trim();
 
-        const user = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
-        if (!user) {
-            return res.status(400).json({
-                success: false,
-                message: "User not found",
-            });
-        }
-
-        const otp = getPin(6);
-
-        await sendMail(email, otp);
-
-        user.resetPasswordOtp = otp;
-        user.resetPasswordOtpExpire = Date.now() + 60 * 1000 * 10;
-
-        await user.save();
-
-        sendToken(res, user, 200, "OTP sent to your email");
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
     }
+
+    const otp = getPin(6);
+
+    await sendMail(email, otp);
+
+    user.resetPasswordOtp = otp;
+    user.resetPasswordOtpExpire = Date.now() + 60 * 1000 * 10;
+
+    await user.save();
+
+    sendToken(res, user, 200, "OTP sent to your email");
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 export const resetPassword = async (req, res) => {
-    try {
-        const { otp } = req.body;
+  try {
+    const { otp } = req.body;
 
-        const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id);
 
-        if (
-            user.resetPasswordOtp !== otp ||
-            user.resetPasswordOtpExpire < Date.now()
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid OTP or OTP expired",
-            });
-        }
-
-        user.resetPasswordOtp = null;
-        user.resetPasswordOtpExpire = null;
-
-        await user.save();
-        res.status(200).json({
-            success: true,
-            message: "OTP verified",
-        });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
+    if (
+      user.resetPasswordOtp !== otp ||
+      user.resetPasswordOtpExpire < Date.now()
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP or OTP expired",
+      });
     }
+
+    user.resetPasswordOtp = null;
+    user.resetPasswordOtpExpire = null;
+
+    await user.save();
+    res.status(200).json({
+      success: true,
+      message: "OTP verified",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 export const settingPassword = async (req, res) => {
-    try {
-        const { newPassword } = req.body;
+  try {
+    const { newPassword } = req.body;
 
-        if (!newPassword) {
-            return res.status(400).json({
-                success: false,
-                message: "Please enter password",
-            });
-        }
-
-        const user = await User.findById(req.user._id);
-
-        user.password = newPassword;
-
-        await user.save();
-
-        logout(req, res);
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
+    if (!newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter password",
+      });
     }
+
+    const user = await User.findById(req.user._id);
+
+    user.password = newPassword;
+
+    await user.save();
+
+    logout(req, res);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
-// exports.userLogin = (req, res) => {
-//   try {
-//     const { email, password } = req.body;
+export const carouselInfo = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
 
-//     var id = email.split("@")[0];
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User does not exist",
+      });
+    }
 
-//     id = parseInt(id);
+    const todayDate = new Date();
 
-//     pool.query(`SELECT Password FROM User WHERE ID='${id}'`, (err, results) => {
-//       if (err) {
-//         res.json({ error: err });
-//       } else {
-//         if (results.length === 0) {
-//           res.json({ code: 401 });
-//         } else if (!results[0]) {
-//           res.json({ code: 401 });
-//         } else {
-//           const hashed_password = eval(`results[0].Password`);
-//           bcrypt.compare(password, hashed_password, (err, comp_result) => {
-//             if (comp_result) {
-//               pool.query(
-//                 `SELECT ID, Name FROM User WHERE ID='${id}'`,
-//                 (err, results) => {
-//                   if (err) {
-//                     res.json({ error: err });
-//                   } else {
-//                     console.log(id, results);
-//                     res.json({
-//                       code: 200,
-//                       name: results[0].Name,
-//                       id: results[0].ID,
-//                     });
-//                   }
-//                 }
-//               );
-//             } else res.json({ code: 401 });
-//           });
-//         }
-//       }
-//     });
+    const events = await Event.findOne({
+      startTime: {
+        $gte: new Date(
+          todayDate.getFullYear(),
+          todayDate.getMonth(),
+          todayDate.getDate(),
+          1
+        ),
+      },
+    })
+      .sort({ dateField: 1 })
+      .limit(1)
+      .populate("postedBy", "fullname _id");
 
-//     console.log("Logged login");
-//   } catch (error) {
-//     console.log("Something went wrong");
-//     res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
+    const donations = await Donation.findOne({
+      pendingAmount: { $gt: 0 },
+    })
+      .sort({ createdAt: 1 })
+      .limit(1);
 
-// exports.userSignup = (req, res) => {
-//   try {
-//     const { name, email, password, type } = req.body;
-//     console.log(req.body);
+    const carouselInfo = [events, donations];
 
-//     const id = parseInt(email.split("@")[0]);
-//     const authPin = getPin(6);
-
-//     bcrypt.hash(password, 10, (err, hashed_password) => {
-//       if (err) {
-//         res.json({ error: err });
-//       }
-//       pool.query(
-//         `INSERT INTO User (Name, ID, Password, Type, AuthPin) VALUES ('${name}','${id}','${hashed_password}', '${type.toUpperCase()}', '${authPin}')`,
-//         (err, result) => {
-//           if (err) {
-//             if (err.code === "ER_DUP_ENTRY") {
-//               res.json({ code: err.code });
-//             } else {
-//               throw err;
-//             }
-//           } else {
-//             res.json({ code: 200 });
-//           }
-//         }
-//       );
-//     });
-
-//     console.log("Logged signup");
-//   } catch (error) {
-//     console.log("Something went wrong");
-//     res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
+    return res.status(200).json({
+      success: true,
+      message: "Data fetched successfully",
+      carouselInfo,
+    });
+  } catch (error) {
+    console.log("Error: Unable to get carousel info");
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

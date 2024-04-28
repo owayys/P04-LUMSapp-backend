@@ -9,6 +9,7 @@ import {
   forgotPassword,
   resetPassword,
   settingPassword,
+  carouselInfo,
 } from "../controllers/user.js";
 import express from "express";
 import { isAuthenticated } from "../middleware/auth.js";
@@ -24,5 +25,6 @@ router.post("/update", isAuthenticated, updateProfile);
 router.post("/forgot", forgotPassword);
 router.post("/reset", resetPassword);
 router.post("/setting", settingPassword);
+router.get("/carousel", isAuthenticated, carouselInfo);
 
 export default router;
